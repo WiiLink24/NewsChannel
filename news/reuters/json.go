@@ -148,6 +148,10 @@ func getThumbnail(root []map[string]any) (*news.Thumbnail, error) {
 			return nil, err
 		}
 
+		if len(data) == 0 {
+			return nil, nil
+		}
+
 		caption := ""
 		if child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["caption"] != nil {
 			caption = child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["caption"].(string)

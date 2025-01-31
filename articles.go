@@ -107,6 +107,10 @@ func (n *News) MakeArticleTable() {
 func (n *News) WriteImages() {
 	n.Header.ImagesTableOffset = n.GetCurrentSize()
 	for _, article := range articles {
+		if article.Thumbnail == nil {
+			continue
+		}
+
 		n.Images = append(n.Images, Image{
 			CreditSize:    0,
 			CreditOffset:  0,
@@ -118,6 +122,10 @@ func (n *News) WriteImages() {
 	}
 
 	for i, article := range articles {
+		if article.Thumbnail == nil {
+			continue
+		}
+
 		n.Images[i].PictureOffset = n.GetCurrentSize()
 		n.ImagesData = append(n.ImagesData, article.Thumbnail.Image...)
 		for n.GetCurrentSize()%4 != 0 {
