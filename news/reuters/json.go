@@ -43,7 +43,7 @@ func getArticles(url string, topic news.Topic) ([]news.Article, error) {
 		return nil, err
 	}
 
-	var root map[string]any
+	var root []map[string]any
 	err = json.Unmarshal(data, &root)
 	if err != nil {
 		return nil, err
@@ -51,59 +51,60 @@ func getArticles(url string, topic news.Topic) ([]news.Article, error) {
 
 	// Iterate over the article block
 	var articles []news.Article
-	i := 0
-	for _, v := range root["wireitems"].([]any) {
-		if v.(map[string]any)["wireitem_type"].(string) != "story" {
+	for _, v := range root {
+		if v["type"].(string) != "latest-stories" {
 			continue
 		}
 
-		if i == 1 {
-			continue
-		}
-		// The article is nested inside a "templates" list, with the data we require in the 1st index.
-		// I (Noah) refer to this as bad because it returns the web page, rather than the mobile API page.
-		// The mobile API is much easier to parse.
-		badArticleURL := v.(map[string]any)["templates"].([]any)[1].(map[string]any)["template_action"].(map[string]any)["url"].(string)
-		badArticleURL = strings.Replace(badArticleURL, "https://www.reuters.com/", "", -1)
-		articleURL := fmt.Sprintf("https://www.reuters.com/mobile/v1/%s", badArticleURL)
-		articleData, err := httpGet(articleURL)
-		if err != nil {
-			return nil, err
-		}
+		stories := v["data"].(map[string]any)["stories"].([]any)
+		for i, story := range stories {
+			if i == 1 {
+				break
+			}
 
-		// Parse article JSON
-		var articleJSON []map[string]any
-		err = json.Unmarshal(articleData, &articleJSON)
-		if err != nil {
-			return nil, err
-		}
+			// The article is nested inside a "templates" list, with the data we require in the 1st index.
+			// I (Noah) refer to this as bad because it returns the web page, rather than the mobile API page.
+			// The mobile API is much easier to parse.
+			articlePath := story.(map[string]any)["url"]
+			articleURL := fmt.Sprintf("https://www.reuters.com/mobile/v1%s", articlePath)
+			articleData, err := httpGet(articleURL)
+			if err != nil {
+				return nil, err
+			}
 
-		content, err := parseArticle(articleJSON)
-		if err != nil {
-			return nil, err
-		}
+			// Parse article JSON
+			var articleJSON []map[string]any
+			err = json.Unmarshal(articleData, &articleJSON)
+			if err != nil {
+				return nil, err
+			}
 
-		location, err := getLocation(articleJSON)
-		if err != nil {
-			return nil, err
-		}
+			content, err := parseArticle(articleJSON)
+			if err != nil {
+				return nil, err
+			}
 
-		// Finally get the thumbnail.
-		thumbnail, err := getThumbnail(articleJSON)
-		if err != nil {
-			return nil, err
-		}
+			location, err := getLocation(articleJSON)
+			if err != nil {
+				return nil, err
+			}
 
-		article := news.Article{
-			Title:     v.(map[string]any)["templates"].([]any)[1].(map[string]any)["story"].(map[string]any)["hed"].(string),
-			Content:   content,
-			Topic:     topic,
-			Location:  location,
-			Thumbnail: thumbnail,
-		}
+			// Finally get the thumbnail.
+			thumbnail, err := getThumbnail(articleJSON)
+			if err != nil {
+				return nil, err
+			}
 
-		articles = append(articles, article)
-		i++
+			article := news.Article{
+				Title:     story.(map[string]any)["title"].(string),
+				Content:   content,
+				Topic:     topic,
+				Location:  location,
+				Thumbnail: thumbnail,
+			}
+
+			articles = append(articles, article)
+		}
 	}
 
 	return articles, nil

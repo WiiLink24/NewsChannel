@@ -61,36 +61,36 @@ func (r *Reuters) GetArticles() ([]news.Article, error) {
 }
 
 func (r *Reuters) GetNationalArticles() ([]news.Article, error) {
-	url := fmt.Sprintf("https://www.reuters.com/arc/outboundfeeds/v4/mobile/section/world/%s/?outputType=json&from=0&size=20", r.country)
+	url := fmt.Sprintf("https://www.reuters.com/mobile/v1/world/%s/?outputType=json", r.country)
 	return getArticles(url, news.NationalNews)
 }
 
 func (r *Reuters) GetInternationalArticles() ([]news.Article, error) {
-	url := "https://www.reuters.com/arc/outboundfeeds/v4/mobile/section/world/?outputType=json&from=0&size=20"
+	url := "https://www.reuters.com/mobile/v1/world/?outputType=json"
 	return getArticles(url, news.InternationalNews)
 }
 
 func (r *Reuters) GetSportsArticles() ([]news.Article, error) {
-	url := "https://www.reuters.com/arc/outboundfeeds/v4/mobile/section/sports/?outputType=json&from=0&size=20"
+	url := "https://www.reuters.com/mobile/v1/sports/?outputType=json"
 	return getArticles(url, news.Sports)
 }
 
 func (r *Reuters) GetEntertainmentArticles() ([]news.Article, error) {
-	url := "https://www.reuters.com/arc/outboundfeeds/v4/mobile/section/lifestyle/?outputType=json&from=0&size=20"
+	url := "https://www.reuters.com/mobile/v1/lifestyle/?outputType=json"
 	return getArticles(url, news.Entertainment)
 }
 
 func (r *Reuters) GetBusinessArticles() ([]news.Article, error) {
-	url := "https://www.reuters.com/arc/outboundfeeds/v4/mobile/section/business/?outputType=json&from=0&size=20"
+	url := "https://www.reuters.com/mobile/v1/business/?outputType=json"
 	return getArticles(url, news.Business)
 }
 
 func (r *Reuters) GetScienceArticles() ([]news.Article, error) {
-	url := "https://www.reuters.com/arc/outboundfeeds/v4/mobile/section/science/?outputType=json&from=0&size=20"
+	url := "https://www.reuters.com/mobile/v1/science/?outputType=json"
 	return getArticles(url, news.Science)
 }
 
 func (r *Reuters) GetTechnologyArticles() ([]news.Article, error) {
-	url := "https://www.reuters.com/arc/outboundfeeds/v4/mobile/section/technology/?outputType=json&from=0&size=20"
+	url := "https://www.reuters.com/mobile/v1/technology/?outputType=json"
 	return getArticles(url, news.Technology)
 }
