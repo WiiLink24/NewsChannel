@@ -17,8 +17,12 @@ type Source struct {
 	CopyrightOffset uint32
 }
 
-func (n *News) GetNewsSource() {
-	n.source = reuters.NewReuters(reuters.UnitedStates)
+func (n *News) GetNewsArticles() {
+	var err error
+	n.articles, err = reuters.NewReuters(n.oldArticleTitles, reuters.UnitedStates).GetArticles()
+	if err != nil {
+		panic(err)
+	}
 }
 
 //go:embed triforce.jpg

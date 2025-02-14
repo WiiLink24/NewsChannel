@@ -62,35 +62,35 @@ func (r *Reuters) GetArticles() ([]news.Article, error) {
 
 func (r *Reuters) GetNationalArticles() ([]news.Article, error) {
 	url := fmt.Sprintf("https://www.reuters.com/mobile/v1/world/%s/?outputType=json", r.country)
-	return getArticles(url, news.NationalNews)
+	return r.getArticles(url, news.NationalNews)
 }
 
 func (r *Reuters) GetInternationalArticles() ([]news.Article, error) {
 	url := "https://www.reuters.com/mobile/v1/world/?outputType=json"
-	return getArticles(url, news.InternationalNews)
+	return r.getArticles(url, news.InternationalNews)
 }
 
 func (r *Reuters) GetSportsArticles() ([]news.Article, error) {
 	url := "https://www.reuters.com/mobile/v1/sports/?outputType=json"
-	return getArticles(url, news.Sports)
+	return r.getArticles(url, news.Sports)
 }
 
 func (r *Reuters) GetEntertainmentArticles() ([]news.Article, error) {
 	url := "https://www.reuters.com/mobile/v1/lifestyle/?outputType=json"
-	return getArticles(url, news.Entertainment)
+	return r.getArticles(url, news.Entertainment)
 }
 
 func (r *Reuters) GetBusinessArticles() ([]news.Article, error) {
 	url := "https://www.reuters.com/mobile/v1/business/?outputType=json"
-	return getArticles(url, news.Business)
+	return r.getArticles(url, news.Business)
 }
 
 func (r *Reuters) GetScienceArticles() ([]news.Article, error) {
 	url := "https://www.reuters.com/mobile/v1/science/?outputType=json"
-	return getArticles(url, news.Science)
+	return r.getArticles(url, news.Science)
 }
 
 func (r *Reuters) GetTechnologyArticles() ([]news.Article, error) {
 	url := "https://www.reuters.com/mobile/v1/technology/?outputType=json"
-	return getArticles(url, news.Technology)
+	return r.getArticles(url, news.Technology)
 }

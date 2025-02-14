@@ -2,7 +2,6 @@ package main
 
 import (
 	"NewsChannel/news"
-	"NewsChannel/news/reuters"
 	"bytes"
 	"encoding/binary"
 	"fmt"
@@ -34,24 +33,22 @@ type News struct {
 	currentLanguageCode uint8
 	currentCountryCode  uint8
 	currentHour         int
-	source              news.Source
+
+	// Titles of articles from previous hours. Required for making sure we don't have duplicates.
+	oldArticleTitles []string
+
 	// Placeholder for the timestamps for a specific topic.
 	timestamps [][]Timestamp
 
 	// Placeholder for locations. Used in order to collect all the used locations without duplicates.
 	locations []*news.Location
+
+	articles []news.Article
 }
 
-var articles []news.Article
 var currentTime = 0
 
 func main() {
-	var err error
-	articles, err = reuters.NewReuters(reuters.UnitedStates).GetArticles()
-	if err != nil {
-		panic(err)
-	}
-
 	// TODO: All Countries!!!!!
 	n := News{}
 	n.currentCountryCode = 18
@@ -62,10 +59,10 @@ func main() {
 	n.currentHour = t.Hour()
 
 	buffer := new(bytes.Buffer)
-	// n.GetNewsSource()
+	n.ReadNewsCache()
+	n.GetNewsArticles()
 	n.MakeHeader()
 	n.MakeWiiMenuHeadlines()
-	n.ReadNewsCache()
 	n.MakeArticleTable()
 	n.MakeTopicTable()
 	n.MakeSourceTable()

@@ -37,7 +37,7 @@ func httpGet(url string) ([]byte, error) {
 	return body, nil
 }
 
-func getArticles(url string, topic news.Topic) ([]news.Article, error) {
+func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	data, err := httpGet(url)
 	if err != nil {
 		return nil, err
@@ -57,9 +57,16 @@ func getArticles(url string, topic news.Topic) ([]news.Article, error) {
 		}
 
 		stories := v["data"].(map[string]any)["stories"].([]any)
-		for i, story := range stories {
+		i := 0
+		for _, story := range stories {
 			if i == 1 {
 				break
+			}
+
+			title := story.(map[string]any)["title"].(string)
+			// Compare previous articles to see if we have a duplicate.
+			if news.IsDuplicateArticle(r.oldArticleTitles, title) {
+				continue
 			}
 
 			// The article is nested inside a "templates" list, with the data we require in the 1st index.
@@ -76,6 +83,10 @@ func getArticles(url string, topic news.Topic) ([]news.Article, error) {
 			var articleJSON []map[string]any
 			err = json.Unmarshal(articleData, &articleJSON)
 			if err != nil {
+				if err.Error() == "invalid character '<' looking for beginning of value" {
+					continue
+				}
+
 				return nil, err
 			}
 
@@ -96,7 +107,7 @@ func getArticles(url string, topic news.Topic) ([]news.Article, error) {
 			}
 
 			article := news.Article{
-				Title:     story.(map[string]any)["title"].(string),
+				Title:     title,
 				Content:   content,
 				Topic:     topic,
 				Location:  location,
@@ -104,6 +115,7 @@ func getArticles(url string, topic news.Topic) ([]news.Article, error) {
 			}
 
 			articles = append(articles, article)
+			i++
 		}
 	}
 

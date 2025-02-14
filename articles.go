@@ -32,7 +32,7 @@ func (n *News) MakeArticleTable() {
 	n.Header.ArticleTableOffset = n.GetCurrentSize()
 
 	// First write all metadata
-	for i, article := range articles {
+	for i, article := range n.articles {
 		publishedTime := currentTime
 
 		// Parse the location if any.
@@ -73,7 +73,7 @@ func (n *News) MakeArticleTable() {
 	}
 
 	// Next write the text
-	for i, article := range articles {
+	for i, article := range n.articles {
 		encodedTitle := utf16.Encode([]rune(article.Title))
 		encodedArticle := utf16.Encode([]rune(*article.Content))
 
@@ -106,7 +106,7 @@ func (n *News) MakeArticleTable() {
 
 func (n *News) WriteImages() {
 	n.Header.ImagesTableOffset = n.GetCurrentSize()
-	for _, article := range articles {
+	for _, article := range n.articles {
 		if article.Thumbnail == nil {
 			continue
 		}
@@ -121,7 +121,7 @@ func (n *News) WriteImages() {
 		})
 	}
 
-	for i, article := range articles {
+	for i, article := range n.articles {
 		if article.Thumbnail == nil {
 			continue
 		}
@@ -137,7 +137,7 @@ func (n *News) WriteImages() {
 		n.Articles[i].PictureTimestamp = fixTime(currentTime)
 	}
 
-	for i, article := range articles {
+	for i, article := range n.articles {
 		if article.Thumbnail.Caption == "" {
 			continue
 		}

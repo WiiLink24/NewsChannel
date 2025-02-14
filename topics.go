@@ -25,6 +25,7 @@ type NewsCache struct {
 	ID        uint32     `json:"id"`
 	Timestamp uint32     `json:"timestamp"`
 	Topic     news.Topic `json:"topic"`
+	Title     string     `json:"title"`
 }
 
 // ReadNewsCache creates the topic table as well as the timestamp table for articles.
@@ -55,6 +56,7 @@ func (n *News) ReadNewsCache() {
 
 		for _, article := range _articles {
 			n.Topics[article.Topic+1].NumberOfArticles++
+			n.oldArticleTitles = append(n.oldArticleTitles, article.Title)
 			n.timestamps[article.Topic+1] = append(n.timestamps[article.Topic+1], Timestamp{
 				Time:          article.Timestamp,
 				ArticleNumber: article.ID,
@@ -86,11 +88,12 @@ func (n *News) MakeTopicTable() {
 func (n *News) WriteNewsCache() {
 	// Order everything into the NewsCache struct
 	var cache []NewsCache
-	for i, article := range articles {
+	for i, article := range n.articles {
 		cache = append(cache, NewsCache{
 			ID:        n.Articles[i].ID,
 			Timestamp: fixTime(currentTime),
 			Topic:     article.Topic,
+			Title:     article.Title,
 		})
 	}
 

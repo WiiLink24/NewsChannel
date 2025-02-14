@@ -1,7 +1,6 @@
 package main
 
 import (
-	"NewsChannel/news/reuters"
 	"bytes"
 	"fmt"
 	"github.com/wii-tools/lzx/lz10"
@@ -12,12 +11,6 @@ import (
 )
 
 func makeNews(_t *testing.T, hour int, dayDelta int) {
-	var err error
-	articles, err = reuters.NewReuters(reuters.UnitedStates).GetArticles()
-	if err != nil {
-		_t.Fatal(err)
-	}
-
 	n := News{}
 	n.currentCountryCode = 18
 	n.currentLanguageCode = 1
@@ -28,10 +21,10 @@ func makeNews(_t *testing.T, hour int, dayDelta int) {
 	n.currentHour = t.Hour()
 
 	buffer := new(bytes.Buffer)
-	// n.GetNewsSource()
+	n.ReadNewsCache()
+	n.GetNewsArticles()
 	n.MakeHeader()
 	n.MakeWiiMenuHeadlines()
-	n.ReadNewsCache()
 	n.MakeArticleTable()
 	n.MakeTopicTable()
 	n.MakeSourceTable()

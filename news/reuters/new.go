@@ -6,16 +6,37 @@ import "NewsChannel/news"
 type Country string
 
 const (
-	UnitedStates = "us"
+	UnitedStates  = "us"
+	Canada        = "canada"
+	Germany       = "germany"
+	France        = "france"
+	UnitedKingdom = "uk"
 )
 
 type Reuters struct {
-	country Country
+	country          Country
+	oldArticleTitles []string
 	news.Source
 }
 
-func NewReuters(country Country) *Reuters {
+func NewReuters(oldArticleTitles []string, country Country) *Reuters {
 	return &Reuters{
-		country: country,
+		oldArticleTitles: oldArticleTitles,
+		country:          country,
+	}
+}
+
+func GetCountry(code int) Country {
+	switch code {
+	case 78:
+		return Germany
+	case 77:
+		return France
+	case 18:
+		return Canada
+	case 110:
+		return UnitedKingdom
+	default:
+		return UnitedStates
 	}
 }

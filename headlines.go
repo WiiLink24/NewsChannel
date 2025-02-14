@@ -12,14 +12,14 @@ func (n *News) MakeWiiMenuHeadlines() {
 	n.Header.HeadlinesTableOffset = n.GetCurrentSize()
 
 	numberOfHeadlines := 11
-	if len(articles) < 11 {
-		numberOfHeadlines = len(articles)
+	if len(n.articles) < 11 {
+		numberOfHeadlines = len(n.articles)
 	}
 
 	n.Headlines = make([]Headlines, numberOfHeadlines)
 
 	for i := 0; i < numberOfHeadlines; i++ {
-		article := articles[i]
+		article := n.articles[i]
 
 		// Encode to UTF-16
 		encoded := utf16.Encode([]rune(article.Title))

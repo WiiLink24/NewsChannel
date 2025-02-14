@@ -3,21 +3,22 @@ package news
 import (
 	"bufio"
 	"bytes"
+	"github.com/pmezard/go-difflib/difflib"
 	"golang.org/x/image/draw"
 	"image"
 	"image/jpeg"
 )
 
-/*func IsDuplicateArticle(articles []Article, currentArticle string) bool {
-	for _, article := range articles {
-		diff := difflib.NewMatcher([]string{currentArticle}, []string{article.Article.Title})
+func IsDuplicateArticle(previousArticles []string, currentArticle string) bool {
+	for _, previousArticle := range previousArticles {
+		diff := difflib.NewMatcher([]string{currentArticle}, []string{previousArticle})
 		if diff.QuickRatio() >= 0.85 {
 			return true
 		}
 	}
 
 	return false
-}*/
+}
 
 func ConvertImage(data []byte) []byte {
 	origImage, err := jpeg.Decode(bytes.NewReader(data))
