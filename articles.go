@@ -37,19 +37,21 @@ func (n *News) MakeArticleTable() {
 
 		// Parse the location if any.
 		locationIndex := uint32(math.MaxUint32)
-		for i, location := range n.locations {
-			if floatCompare(location.Latitude, article.Location.Latitude) && floatCompare(location.Longitude, article.Location.Longitude) {
-				locationIndex = uint32(i)
-				break
+		if article.Location != nil {
+			for i, location := range n.locations {
+				if floatCompare(location.Latitude, article.Location.Latitude) && floatCompare(location.Longitude, article.Location.Longitude) {
+					locationIndex = uint32(i)
+					break
+				}
 			}
-		}
 
-		// If no existing location was found but the article contains a location, determine if we need to make an API call.
-		if locationIndex == uint32(math.MaxUint32) && article.Location.Latitude != 0 {
-			locationIndex = uint32(len(n.locations))
-			n.locations = append(n.locations, article.Location)
-		} else if locationIndex == uint32(math.MaxUint32) && article.Location.Name != "" {
-			// TODO: API Call for location
+			// If no existing location was found but the article contains a location, determine if we need to make an API call.
+			if locationIndex == uint32(math.MaxUint32) && article.Location.Latitude != 0 {
+				locationIndex = uint32(len(n.locations))
+				n.locations = append(n.locations, article.Location)
+			} else if locationIndex == uint32(math.MaxUint32) && article.Location.Name != "" {
+				// TODO: API Call for location
+			}
 		}
 
 		n.Articles = append(n.Articles, Article{
