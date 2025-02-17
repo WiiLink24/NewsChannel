@@ -1,6 +1,7 @@
 package main
 
 import (
+	"NewsChannel/news/reuters"
 	"bytes"
 	"fmt"
 	"github.com/wii-tools/lzx/lz10"
@@ -11,45 +12,56 @@ import (
 )
 
 func makeNews(_t *testing.T, hour int, dayDelta int) {
-	n := News{}
-	n.currentCountryCode = 18
-	n.currentLanguageCode = 1
+	countries := []uint8{18, 49, 110}
+	for _, country := range countries {
+		n := News{}
+		n.currentCountry = reuters.GetCountry(country)
+		n.currentCountryCode = country
+		n.currentLanguageCode = 1
 
-	now := time.Now()
-	t := time.Date(now.Year(), now.Month(), now.Day()-dayDelta, hour, 0, 0, 0, time.Local)
-	currentTime = int(t.Unix())
-	n.currentHour = t.Hour()
+		now := time.Now()
+		t := time.Date(now.Year(), now.Month(), now.Day()-dayDelta, hour, 0, 0, 0, time.Local)
+		currentTime = int(t.Unix())
+		n.currentHour = t.Hour()
 
-	buffer := new(bytes.Buffer)
-	n.ReadNewsCache()
-	n.GetNewsArticles()
-	n.MakeHeader()
-	n.MakeWiiMenuHeadlines()
-	n.MakeArticleTable()
-	n.MakeTopicTable()
-	n.MakeSourceTable()
-	n.WriteNewsCache()
-	n.MakeLocationTable()
-	n.WriteImages()
-	n.Header.Filesize = n.GetCurrentSize()
-	n.WriteAll(buffer)
+		buffer := new(bytes.Buffer)
+		n.ReadNewsCache()
+		n.GetNewsArticles()
+		n.MakeHeader()
+		n.MakeWiiMenuHeadlines()
+		n.MakeArticleTable()
+		n.MakeTopicTable()
+		n.MakeSourceTable()
+		n.WriteNewsCache()
+		n.MakeLocationTable()
+		n.WriteImages()
+		n.Header.Filesize = n.GetCurrentSize()
+		n.WriteAll(buffer)
 
-	crcTable := crc32.MakeTable(crc32.IEEE)
-	checksum := crc32.Checksum(buffer.Bytes()[12:], crcTable)
-	n.Header.CRC32 = checksum
+		crcTable := crc32.MakeTable(crc32.IEEE)
+		checksum := crc32.Checksum(buffer.Bytes()[12:], crcTable)
+		n.Header.CRC32 = checksum
 
-	buffer.Reset()
-	n.WriteAll(buffer)
+		buffer.Reset()
+		n.WriteAll(buffer)
 
-	compressed, err := lz10.Compress(buffer.Bytes())
-	if err != nil {
-		_t.Fatal(err)
-	}
+		compressed, err := lz10.Compress(buffer.Bytes())
+		if err != nil {
+			_t.Fatal(err)
+		}
 
-	err = os.WriteFile(fmt.Sprintf("./v2/1/018/news.dec.%02d", n.currentHour), buffer.Bytes(), 0666)
-	err = os.WriteFile(fmt.Sprintf("./v2/1/018/news.bin.%02d", n.currentHour), SignFile(compressed), 0666)
-	if err != nil {
-		_t.Fatal(err)
+		// If the folder exists we can just continue
+		err = os.MkdirAll(fmt.Sprintf("./v2/%d/%03d", n.currentLanguageCode, n.currentCountryCode), os.ModePerm)
+		if !os.IsExist(err) {
+			if err != nil {
+				_t.Fatal(err)
+			}
+		}
+
+		err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed), 0666)
+		if err != nil {
+			_t.Fatal(err)
+		}
 	}
 }
 

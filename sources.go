@@ -19,7 +19,7 @@ type Source struct {
 
 func (n *News) GetNewsArticles() {
 	var err error
-	n.articles, err = reuters.NewReuters(n.oldArticleTitles, reuters.UnitedStates).GetArticles()
+	n.articles, err = reuters.NewReuters(n.oldArticleTitles, n.currentCountry).GetArticles()
 	if err != nil {
 		panic(err)
 	}

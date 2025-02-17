@@ -26,7 +26,7 @@ func NewReuters(oldArticleTitles []string, country Country) *Reuters {
 	}
 }
 
-func GetCountry(code int) Country {
+func GetCountry(code uint8) Country {
 	switch code {
 	case 78:
 		return Germany
