@@ -5,8 +5,11 @@ import (
 	"bytes"
 	"github.com/pmezard/go-difflib/difflib"
 	"golang.org/x/image/draw"
-	"image"
 	"image/jpeg"
+
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 )
 
 func IsDuplicateArticle(previousArticles []string, currentArticle string) bool {
@@ -21,7 +24,7 @@ func IsDuplicateArticle(previousArticles []string, currentArticle string) bool {
 }
 
 func ConvertImage(data []byte) []byte {
-	origImage, err := jpeg.Decode(bytes.NewReader(data))
+	origImage, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		return nil
 	}

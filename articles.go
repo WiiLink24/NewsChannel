@@ -107,7 +107,7 @@ func (n *News) MakeArticleTable() {
 func (n *News) WriteImages() {
 	n.Header.ImagesTableOffset = n.GetCurrentSize()
 	for _, article := range n.articles {
-		if article.Thumbnail == nil {
+		if article.Thumbnail == nil || len(article.Thumbnail.Image) == 0 {
 			continue
 		}
 
@@ -121,8 +121,9 @@ func (n *News) WriteImages() {
 		})
 	}
 
-	for i, article := range n.articles {
-		if article.Thumbnail == nil {
+	i := 0
+	for _, article := range n.articles {
+		if article.Thumbnail == nil || len(article.Thumbnail.Image) == 0 {
 			continue
 		}
 
@@ -135,9 +136,11 @@ func (n *News) WriteImages() {
 		// Fix up the article
 		n.Articles[i].PictureIndex = uint32(i)
 		n.Articles[i].PictureTimestamp = fixTime(currentTime)
+		i++
 	}
 
-	for i, article := range n.articles {
+	i = 0
+	for _, article := range n.articles {
 		if article.Thumbnail.Caption == "" {
 			continue
 		}
@@ -150,6 +153,8 @@ func (n *News) WriteImages() {
 		for n.GetCurrentSize()%4 != 0 {
 			n.CaptionData = append(n.CaptionData, uint16(0))
 		}
+
+		i++
 	}
 
 	n.Header.NumberOfImages = uint32(len(n.Images))
