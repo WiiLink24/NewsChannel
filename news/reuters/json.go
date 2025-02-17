@@ -185,6 +185,10 @@ func getLocation(root []map[string]any) (*news.Location, error) {
 			continue
 		}
 
+		if child["data"].(map[string]any)["article"].(map[string]any)["dateline"] == nil {
+			return nil, nil
+		}
+
 		location := child["data"].(map[string]any)["article"].(map[string]any)["dateline"].([]any)[0].(string)
 		location = strings.ToUpper(strings.Split(location, ",")[0])
 
