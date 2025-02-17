@@ -64,3 +64,7 @@ func TestAllFileGeneration(_t *testing.T) {
 		makeNews(_t, i, 1)
 	}
 }
+
+func TestGenerateZeroHour(_t *testing.T) {
+	makeNews(_t, 0, 0)
+}

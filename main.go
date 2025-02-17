@@ -44,6 +44,9 @@ type News struct {
 	locations []*news.Location
 
 	articles []news.Article
+
+	// Placeholder for the topics.
+	topics []Topic
 }
 
 var currentTime = 0
@@ -102,9 +105,9 @@ func (n *News) WriteAll(writer io.Writer) {
 	Write(writer, n.Header)
 	Write(writer, n.Headlines)
 	Write(writer, n.HeadlineText)
-	Write(writer, n.Topics)
 	Write(writer, n.Articles)
 	Write(writer, n.ArticleText)
+	Write(writer, n.Topics)
 	Write(writer, n.Timestamps)
 	Write(writer, n.TopicText)
 	Write(writer, n.Sources)

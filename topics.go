@@ -35,8 +35,7 @@ func (n *News) ReadNewsCache() {
 	topics := n.GetTopicsForCountry()
 	topicsLength := len(topics) + 1
 
-	n.Header.TopicTableOffset = n.GetCurrentSize()
-	n.Topics = make([]Topic, topicsLength)
+	n.topics = make([]Topic, topicsLength)
 	n.timestamps = make([][]Timestamp, topicsLength)
 
 	for i := 0; i < 24; i++ {
@@ -55,7 +54,7 @@ func (n *News) ReadNewsCache() {
 		checkError(err)
 
 		for _, article := range _articles {
-			n.Topics[article.Topic+1].NumberOfArticles++
+			n.topics[article.Topic+1].NumberOfArticles++
 			n.oldArticleTitles = append(n.oldArticleTitles, article.Title)
 			n.timestamps[article.Topic+1] = append(n.timestamps[article.Topic+1], Timestamp{
 				Time:          article.Timestamp,
@@ -66,6 +65,10 @@ func (n *News) ReadNewsCache() {
 }
 
 func (n *News) MakeTopicTable() {
+	// Move the placeholder into the field being written.
+	n.Header.TopicTableOffset = n.GetCurrentSize()
+	n.Topics = n.topics
+
 	topics := n.GetTopicsForCountry()
 	topicsLength := len(topics) + 1
 	n.Header.NumberOfTopics = uint32(topicsLength)
