@@ -18,22 +18,24 @@ type Source struct {
 }
 
 func (n *News) GetNewsArticles() {
+	n.source = reuters.NewReuters(n.oldArticleTitles, n.currentCountry)
+
 	var err error
-	n.articles, err = reuters.NewReuters(n.oldArticleTitles, n.currentCountry).GetArticles()
+	n.articles, err = n.source.GetArticles()
 	if err != nil {
 		panic(err)
 	}
 }
 
-//go:embed triforce.jpg
-var triforce []byte
-
 func (n *News) MakeSourceTable() {
 	n.Header.SourceTableOffset = n.GetCurrentSize()
+
+	logo := n.source.GetLogo()
+
 	n.Sources = append(n.Sources, Source{
 		Logo:            0,
 		Position:        1,
-		PictureSize:     uint32(len(triforce)),
+		PictureSize:     uint32(len(logo)),
 		PictureOffset:   0,
 		NameSize:        0,
 		NameOffset:      0,
@@ -42,7 +44,7 @@ func (n *News) MakeSourceTable() {
 	})
 
 	n.Sources[0].PictureOffset = n.GetCurrentSize()
-	n.SourcePictures = triforce
+	n.SourcePictures = logo
 
 	for n.GetCurrentSize()%4 != 0 {
 		n.SourcePictures = append(n.SourcePictures, 0)

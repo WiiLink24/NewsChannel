@@ -31,6 +31,7 @@ type News struct {
 	ImagesData     []byte
 	CaptionData    []uint16
 
+	source         news.Source
 	currentCountry reuters.Country
 
 	currentLanguageCode uint8

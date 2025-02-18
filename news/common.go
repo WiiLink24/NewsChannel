@@ -3,6 +3,7 @@ package news
 // Source represents a News source.
 type Source interface {
 	GetArticles() ([]Article, error)
+	GetLogo() []byte
 }
 
 type Article struct {

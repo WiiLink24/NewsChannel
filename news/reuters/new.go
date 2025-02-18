@@ -1,6 +1,9 @@
 package reuters
 
-import "NewsChannel/news"
+import (
+	"NewsChannel/news"
+	_ "embed"
+)
 
 // Country represents a country in the Reuters API
 type Country string
@@ -18,6 +21,9 @@ type Reuters struct {
 	oldArticleTitles []string
 	news.Source
 }
+
+//go:embed logo.jpg
+var Logo []byte
 
 func NewReuters(oldArticleTitles []string, country Country) *Reuters {
 	return &Reuters{
@@ -39,4 +45,8 @@ func GetCountry(code uint8) Country {
 	default:
 		return UnitedStates
 	}
+}
+
+func (r *Reuters) GetLogo() []byte {
+	return Logo
 }
