@@ -9,23 +9,11 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"os"
-	"strconv"
 )
 
 // fixTime adjusts the timestamp to coincide with the Wii's UTC timestamp.
 func fixTime(value int) uint32 {
 	return uint32((value - 946684800) / 60)
-}
-
-func ZFill(value uint8, size int) string {
-	str := strconv.FormatInt(int64(value), 10)
-	temp := ""
-
-	for i := 0; i < size-len(str); i++ {
-		temp += "0"
-	}
-
-	return temp + str
 }
 
 func SignFile(contents []byte) []byte {
