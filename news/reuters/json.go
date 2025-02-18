@@ -190,7 +190,13 @@ func getLocation(root []map[string]any) (*news.Location, error) {
 		}
 
 		location := child["data"].(map[string]any)["article"].(map[string]any)["dateline"].([]any)[0].(string)
-		location = strings.ToUpper(strings.Split(location, ",")[0])
+		splitLocation := strings.Split(location, ",")
+		if len(splitLocation) == 1 {
+			// Didn't split anything - no location
+			return nil, nil
+		}
+
+		location = strings.ToUpper(splitLocation[0])
 
 		if l, ok := news.CommonLocations[location]; ok {
 			return &l, nil

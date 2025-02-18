@@ -402,4 +402,14 @@ var CommonLocations = map[string]Location{
 		Latitude:  47.3895263,
 		Name:      "Zurich",
 	},
+	"OTTAWA": {
+		Longitude: -75.7452,
+		Latitude:  45.2636,
+		Name:      "Ottawa",
+	},
+	"SEOUL": {
+		Longitude: 126.996459,
+		Latitude:  37.496337,
+		Name:      "Seoul",
+	},
 }
