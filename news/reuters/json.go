@@ -95,6 +95,11 @@ func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, err
 				return nil, err
 			}
 
+			// Possible there is no text?
+			if len(*content) == 0 {
+				continue
+			}
+
 			location, err := getLocation(articleJSON)
 			if err != nil {
 				return nil, err
