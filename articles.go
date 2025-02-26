@@ -147,9 +147,10 @@ func (n *News) WriteImages() {
 			continue
 		}
 
+		caption := utf16.Encode([]rune(article.Thumbnail.Caption))
 		n.Images[i].CaptionOffset = n.GetCurrentSize()
-		n.Images[i].CaptionSize = uint32(len(article.Thumbnail.Caption) * 2)
-		n.CaptionData = append(n.CaptionData, utf16.Encode([]rune(article.Thumbnail.Caption))...)
+		n.Images[i].CaptionSize = uint32(len(caption) / 2)
+		n.CaptionData = append(n.CaptionData, caption...)
 		n.CaptionData = append(n.CaptionData, 0)
 
 		for n.GetCurrentSize()%4 != 0 {
