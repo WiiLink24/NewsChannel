@@ -56,53 +56,67 @@ type News struct {
 var currentTime = 0
 
 func main() {
-	// TODO: All Countries!!!!!
-	// TODO: Also all languages
-	// Currently just doing Canada, U.S.A. and the United Kingdom.
-	countries := []uint8{18, 49, 110}
-	for _, country := range countries {
-		n := News{}
-		n.currentCountry = reuters.GetCountry(country)
-		n.currentCountryCode = country
-		n.currentLanguageCode = 1
+    // Load configuration from JSON file instead of having random numbers (added Spain btw)
+    config, err := LoadConfig("countries.json")
+    checkError(err)
 
-		t := time.Now()
-		currentTime = int(t.Unix())
-		n.currentHour = t.Hour()
+    // Process each country/language combination
+    for _, countryConfig := range config.Countries {
+        n := News{}
 
-		buffer := new(bytes.Buffer)
-		n.ReadNewsCache()
-		n.GetNewsArticles()
-		n.MakeHeader()
-		n.MakeWiiMenuHeadlines()
-		n.MakeArticleTable()
-		n.MakeTopicTable()
-		n.MakeSourceTable()
-		n.WriteNewsCache()
-		n.MakeLocationTable()
-		n.WriteImages()
-		n.Header.Filesize = n.GetCurrentSize()
-		n.WriteAll(buffer)
-
-		crcTable := crc32.MakeTable(crc32.IEEE)
-		checksum := crc32.Checksum(buffer.Bytes()[12:], crcTable)
-		n.Header.CRC32 = checksum
-
-		buffer.Reset()
-		n.WriteAll(buffer)
-
-		compressed, err := lz10.Compress(buffer.Bytes())
-		checkError(err)
-
-		// If the folder exists we can just continue
-		err = os.MkdirAll(fmt.Sprintf("./v2/%d/%03d", n.currentLanguageCode, n.currentCountryCode), os.ModePerm)
-		if !os.IsExist(err) {
-			checkError(err)
+		// If languageCode is 1, then we use reuters, if it is 2 (Spanish language) we use RTVE.
+		if countryConfig.LanguageCode == 2 {
+			n.currentCountry = "spain"
+		} else {
+			n.currentCountry = reuters.GetCountry(countryConfig.CountryCode)
 		}
 
-		err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed), 0666)
-		checkError(err)
-	}
+        n.currentCountryCode = countryConfig.CountryCode
+        n.currentLanguageCode = countryConfig.LanguageCode
+
+        log.Printf("Processing %s (%s) - Country: %d, Language: %d", 
+            countryConfig.Name, countryConfig.Language, 
+            countryConfig.CountryCode, countryConfig.LanguageCode)
+
+        t := time.Now()
+        currentTime = int(t.Unix())
+        n.currentHour = t.Hour()
+
+        buffer := new(bytes.Buffer)
+        n.ReadNewsCache()
+        n.GetNewsArticles()
+        n.MakeHeader()
+        n.MakeWiiMenuHeadlines()
+        n.MakeArticleTable()
+        n.MakeTopicTable()
+        n.MakeSourceTable()
+        n.WriteNewsCache()
+        n.MakeLocationTable()
+        n.WriteImages()
+        n.Header.Filesize = n.GetCurrentSize()
+        n.WriteAll(buffer)
+
+        crcTable := crc32.MakeTable(crc32.IEEE)
+        checksum := crc32.Checksum(buffer.Bytes()[12:], crcTable)
+        n.Header.CRC32 = checksum
+
+        buffer.Reset()
+        n.WriteAll(buffer)
+
+        compressed, err := lz10.Compress(buffer.Bytes())
+        checkError(err)
+
+        // If the folder exists we can just continue
+        err = os.MkdirAll(fmt.Sprintf("./v2/%d/%03d", n.currentLanguageCode, n.currentCountryCode), os.ModePerm)
+        if !os.IsExist(err) {
+            checkError(err)
+        }
+
+        err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed), 0666)
+        checkError(err)
+
+        log.Printf("Successfully generated news file for %s (%s)", countryConfig.Name, countryConfig.Language)
+    }
 }
 
 func checkError(err error) {

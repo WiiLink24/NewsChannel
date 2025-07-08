@@ -1,0 +1,5 @@
+debug/
+cache/
+v2/
+Private.pem
+*.DS_Store

@@ -1,0 +1,28 @@
+{
+  "countries": [
+    {
+      "countryCode": 18,
+      "languageCode": 1,
+      "name": "Canada",
+      "language": "English"
+    },
+    {
+      "countryCode": 49,
+      "languageCode": 1,
+      "name": "United States",
+      "language": "English"
+    },
+    {
+      "countryCode": 110,
+      "languageCode": 1,
+      "name": "United Kingdom",
+      "language": "English"
+    },
+    {
+      "countryCode": 1,
+      "languageCode": 2,
+      "name": "Spain",
+      "language": "Spanish"
+    }
+  ]
+}
