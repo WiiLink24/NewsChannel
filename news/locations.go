@@ -412,4 +412,89 @@ var CommonLocations = map[string]Location{
 		Latitude:  37.496337,
 		Name:      "Seoul",
 	},
+	"SPAIN": {
+		Longitude: -3.703790,
+		Latitude:  40.416775,
+		Name:      "Spain",
+	},
+	"BARCELONA": {
+		Longitude: 2.154007,
+		Latitude:  41.390205,
+		Name:      "Barcelona",
+	},
+	"VALENCIA": {
+		Longitude: -0.375156,
+		Latitude:  39.460430,
+		Name:      "Valencia",
+	},
+	"SEVILLE": {
+		Longitude: -5.984459,
+		Latitude:  37.389092,
+		Name:      "Seville",
+	},
+	"BILBAO": {
+		Longitude: -2.924928,
+		Latitude:  43.263012,
+		Name:      "Bilbao",
+	},
+	"ZARAGOZA": {
+		Longitude: -0.877494,
+		Latitude:  41.648823,
+		Name:      "Zaragoza",
+	},
+	"MALAGA": {
+		Longitude: -4.421272,
+		Latitude:  36.721261,
+		Name:      "Malaga",
+	},
+	"MURCIA": {
+		Longitude: -1.130328,
+		Latitude:  37.986942,
+		Name:      "Murcia",
+	},
+	"PALMA": {
+		Longitude: 2.650407,
+		Latitude:  39.569736,
+		Name:      "Palma",
+	},
+	"SANTANDER": {
+		Longitude: -3.804648,
+		Latitude:  43.462776,
+		Name:      "Santander",
+	},
+	"CORDOBA": {
+		Longitude: -4.779383,
+		Latitude:  37.891910,
+		Name:      "Cordoba",
+	},
+	"VALLADOLID": {
+		Longitude: -4.728562,
+		Latitude:  41.652251,
+		Name:      "Valladolid",
+	},
+	"VIGO": {
+		Longitude: -8.721275,
+		Latitude:  42.231407,
+		Name:      "Vigo",
+	},
+	"GIJON": {
+		Longitude: -5.661926,
+		Latitude:  43.532054,
+		Name:      "Gijon",
+	},
+	"PAMPLONA": {
+		Longitude: -1.644568,
+		Latitude:  42.812526,
+		Name:      "Pamplona",
+	},
+	"ANDALUCIA": {
+		Longitude: -4.779383,
+		Latitude:  37.891910,
+		Name:      "Andalucia",
+	},
+	"COLOMBIA": {
+		Longitude: -74.297333,
+		Latitude:  4.570868,
+		Name:      "Colombia",
+	},
 }
