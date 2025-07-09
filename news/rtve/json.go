@@ -4,26 +4,12 @@ import (
 	"NewsChannel/news"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
-	"unicode"
-
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
 )
 
 var htmlRegex = regexp.MustCompile("<.*?>")
-
-// removeAccents removes accents and diacritics from text
-func removeAccents(s string) string {
-	t := transform.Chain(norm.NFD, transform.RemoveFunc(func(r rune) bool {
-		return unicode.Is(unicode.Mn, r) // Mn: nonspacing marks
-	}), norm.NFC)
-	output, _, _ := transform.String(t, s)
-	return output
-}
 
 func httpGet(url string) ([]byte, error) {
 	c := &http.Client{}
@@ -95,8 +81,6 @@ func (r *RTVE) getArticles(url string, topic news.Topic) ([]news.Article, error)
 	if err != nil {
 		return nil, err
 	}
-
-	log.Printf("Fetched %d articles from RTVE for topic %d", len(response.Page.Items), topic)
 
 	var articles []news.Article
 	for i, rtveArticle := range response.Page.Items {
@@ -190,59 +174,39 @@ func (r *RTVE) getThumbnail(imageURL string) (*news.Thumbnail, error) {
 }
 
 func (r *RTVE) extractLocation(text, category string, otherTopics []string) *news.Location {
-    // Spanish to English location mappings (without accents), will need to add more :/
-    spanishMappings := map[string]string{
-        "SEVILLA":        "SEVILLE",
-        "ESTADOS UNIDOS": "UNITED STATES",
-        "REINO UNIDO":    "UNITED KINGDOM",
-        "FRANCIA":        "PARIS",
-        "ALEMANIA":       "BERLIN",
-        "ITALIA":         "ROME",
-        "ESPANA":         "SPAIN",
-    }
+	// Extract location from a category path
+	extractFromPath := func(path string) *news.Location {
+		if path == "" {
+			return nil
+		}
+		parts := strings.Split(path, "/")
 
-    // Extract location from a category path
-    extractFromPath := func(path string) *news.Location {
-        if path == "" {
-            return nil
-        }
-        parts := strings.Split(path, "/")
+		// Match the last part of the path recursively
+		for i := len(parts) - 1; i >= 0; i-- {
+			part := strings.TrimSpace(parts[i])
+			if part != "" && part != "Noticias" && part != "Mundo" {
+				if part != "Especiales" && part != "Nacional" && part != "Internacional" && part != "Tags Libres" {
+					if location := news.GetLocationForExtractedLocation(part); location != nil {
+						return location
+					}
+				}
+			}
+		}
+		return nil
+	}
 
-        // Match the last part of the path recursively
-        for i := len(parts) - 1; i >= 0; i-- {
-            part := strings.TrimSpace(parts[i])
-            if part != "" && part != "Noticias" && part != "Mundo" {
-                if part != "Especiales" && part != "Nacional" && part != "Internacional" && part != "Tags Libres" {
-                    // Remove accents and convert to uppercase
-                    upperPart := strings.ToUpper(removeAccents(part))
+	// Try to extract location from the main category
+	if location := extractFromPath(category); location != nil {
+		return location
+	}
 
-                    // Check if we need to map the Spanish name to English
-                    if mappedName, exists := spanishMappings[upperPart]; exists {
-                        upperPart = mappedName
-                    }
+	// Main category doesn't contain a valid location, search through otherTopicsName
+	for _, topic := range otherTopics {
+		if location := extractFromPath(topic); location != nil {
+			return location
+		}
+	}
 
-                    // Look up in the global CommonLocations
-                    if location, exists := news.CommonLocations[upperPart]; exists {
-                        return &location
-                    }
-                }
-            }
-        }
-        return nil
-    }
-
-    // Try to extract location from the main category
-    if location := extractFromPath(category); location != nil {
-        return location
-    }
-
-    // Main category doesn't contain a valid location, search through otherTopicsName
-    for _, topic := range otherTopics {
-        if location := extractFromPath(topic); location != nil {
-            return location
-        }
-    }
-
-    // No location found anywhere
-    return nil
+	// No location found anywhere
+	return nil
 }

@@ -6,12 +6,13 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/wii-tools/lzx/lz10"
 	"hash/crc32"
 	"io"
 	"log"
 	"os"
 	"time"
+
+	"github.com/wii-tools/lzx/lz10"
 )
 
 type News struct {
@@ -56,67 +57,69 @@ type News struct {
 var currentTime = 0
 
 func main() {
-    // Load configuration from JSON file instead of having random numbers (added Spain btw)
-    config, err := LoadConfig("countries.json")
-    checkError(err)
+	// Load configuration from JSON file instead of having random numbers (added Spain btw)
+	config, err := LoadConfig("countries.json")
+	checkError(err)
 
-    // Process each country/language combination
-    for _, countryConfig := range config.Countries {
-        n := News{}
+	// Process each country/language combination
+	for _, countryConfig := range config.Countries {
+		n := News{}
 
-		// If languageCode is 1, then we use reuters, if it is 2 (Spanish language) we use RTVE.
-		if countryConfig.LanguageCode == 2 {
+		// Choose news source based on language code
+		if countryConfig.LanguageCode == 4 {
 			n.currentCountry = "spain"
+		} else if countryConfig.LanguageCode == 5 {
+			n.currentCountry = "italy"
 		} else {
 			n.currentCountry = reuters.GetCountry(countryConfig.CountryCode)
 		}
 
-        n.currentCountryCode = countryConfig.CountryCode
-        n.currentLanguageCode = countryConfig.LanguageCode
+		n.currentCountryCode = countryConfig.CountryCode
+		n.currentLanguageCode = countryConfig.LanguageCode
 
-        log.Printf("Processing %s (%s) - Country: %d, Language: %d", 
-            countryConfig.Name, countryConfig.Language, 
-            countryConfig.CountryCode, countryConfig.LanguageCode)
+		log.Printf("Processing %s (%s) - Country: %d, Language: %d",
+			countryConfig.Name, countryConfig.Language,
+			countryConfig.CountryCode, countryConfig.LanguageCode)
 
-        t := time.Now()
-        currentTime = int(t.Unix())
-        n.currentHour = t.Hour()
+		t := time.Now()
+		currentTime = int(t.Unix())
+		n.currentHour = t.Hour()
 
-        buffer := new(bytes.Buffer)
-        n.ReadNewsCache()
-        n.GetNewsArticles()
-        n.MakeHeader()
-        n.MakeWiiMenuHeadlines()
-        n.MakeArticleTable()
-        n.MakeTopicTable()
-        n.MakeSourceTable()
-        n.WriteNewsCache()
-        n.MakeLocationTable()
-        n.WriteImages()
-        n.Header.Filesize = n.GetCurrentSize()
-        n.WriteAll(buffer)
+		buffer := new(bytes.Buffer)
+		n.ReadNewsCache()
+		n.GetNewsArticles()
+		n.MakeHeader()
+		n.MakeWiiMenuHeadlines()
+		n.MakeArticleTable()
+		n.MakeTopicTable()
+		n.MakeSourceTable()
+		n.WriteNewsCache()
+		n.MakeLocationTable()
+		n.WriteImages()
+		n.Header.Filesize = n.GetCurrentSize()
+		n.WriteAll(buffer)
 
-        crcTable := crc32.MakeTable(crc32.IEEE)
-        checksum := crc32.Checksum(buffer.Bytes()[12:], crcTable)
-        n.Header.CRC32 = checksum
+		crcTable := crc32.MakeTable(crc32.IEEE)
+		checksum := crc32.Checksum(buffer.Bytes()[12:], crcTable)
+		n.Header.CRC32 = checksum
 
-        buffer.Reset()
-        n.WriteAll(buffer)
+		buffer.Reset()
+		n.WriteAll(buffer)
 
-        compressed, err := lz10.Compress(buffer.Bytes())
-        checkError(err)
+		compressed, err := lz10.Compress(buffer.Bytes())
+		checkError(err)
 
-        // If the folder exists we can just continue
-        err = os.MkdirAll(fmt.Sprintf("./v2/%d/%03d", n.currentLanguageCode, n.currentCountryCode), os.ModePerm)
-        if !os.IsExist(err) {
-            checkError(err)
-        }
+		// If the folder exists we can just continue
+		err = os.MkdirAll(fmt.Sprintf("./v2/%d/%03d", n.currentLanguageCode, n.currentCountryCode), os.ModePerm)
+		if !os.IsExist(err) {
+			checkError(err)
+		}
 
-        err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed), 0666)
-        checkError(err)
+		err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed), 0666)
+		checkError(err)
 
-        log.Printf("Successfully generated news file for %s (%s)", countryConfig.Name, countryConfig.Language)
-    }
+		log.Printf("Successfully generated news file for %s (%s)", countryConfig.Name, countryConfig.Language)
+	}
 }
 
 func checkError(err error) {

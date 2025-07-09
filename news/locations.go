@@ -1,9 +1,262 @@
 package news
 
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+)
+
 type Location struct {
 	Longitude float64
 	Latitude  float64
 	Name      string
+}
+
+// NominatimResponse represents the structure of OpenStreetMap Nominatim API response
+type NominatimResponse struct {
+	PlaceID     int      `json:"place_id"`
+	Licence     string   `json:"licence"`
+	OSMType     string   `json:"osm_type"`
+	OSMID       int      `json:"osm_id"`
+	Lat         string   `json:"lat"`
+	Lon         string   `json:"lon"`
+	Class       string   `json:"class"`
+	Type        string   `json:"type"`
+	PlaceRank   int      `json:"place_rank"`
+	Importance  float64  `json:"importance"`
+	AddressType string   `json:"addresstype"`
+	Name        string   `json:"name"`
+	DisplayName string   `json:"display_name"`
+	BoundingBox []string `json:"boundingbox"`
+}
+
+// GetLocationFromAPI fetches location data from OpenStreetMap Nominatim API
+func GetLocationFromAPI(locationName string) (*Location, error) {
+	encodedLocation := url.QueryEscape(locationName)
+
+	apiURL := fmt.Sprintf("https://nominatim.openstreetmap.org/search?q=%s&format=json&limit=1", encodedLocation)
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+	}
+
+	req, err := http.NewRequest("GET", apiURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make API request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var results []NominatimResponse
+	err = json.Unmarshal(body, &results)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse JSON response: %w", err)
+	}
+
+	if len(results) == 0 {
+		return nil, fmt.Errorf("no location found for: %s", locationName)
+	}
+
+	// Use the first (most relevant) result
+	result := results[0]
+
+	lat, err := strconv.ParseFloat(result.Lat, 64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse latitude: %w", err)
+	}
+
+	lon, err := strconv.ParseFloat(result.Lon, 64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse longitude: %w", err)
+	}
+
+	location := &Location{
+		Longitude: lon,
+		Latitude:  lat,
+		Name:      result.Name,
+	}
+
+	return location, nil
+}
+
+// GetLocationName gets a location's English name and coordinates
+// First checks CommonLocations, then falls back to OpenStreetMap API
+func GetLocationName(locationPart string) string {
+	// Convert the location part to uppercase to match the keys in CommonLocations
+	locationKey := strings.ToUpper(locationPart)
+
+	// Check if the location exists in CommonLocations
+	if loc, exists := CommonLocations[locationKey]; exists {
+		return loc.Name
+	}
+
+	// If not found, try with the API
+	location, err := GetLocationFromAPI(locationPart)
+	if err != nil {
+		log.Printf("Failed to get location from API for '%s': %v", locationPart, err)
+		return locationPart
+	}
+
+	return location.Name
+}
+
+// Gets a complete Location object with coordinates
+func GetLocationForExtractedLocation(locationPart string) *Location {
+	// Convert the location part to uppercase to match the keys in CommonLocations
+	locationKey := strings.ToUpper(locationPart)
+
+	// Check if the location is in the blocklist (not a real place)
+	if BlockedLocations[locationKey] {
+		return nil
+	}
+
+	// Check if the location exists in CommonLocations
+	if loc, exists := CommonLocations[locationKey]; exists {
+		return &loc
+	}
+
+	// If not found, try with the API
+	location, err := GetLocationFromAPI(locationPart)
+	if err != nil {
+		log.Printf("Failed to get location from API for '%s': %v", locationPart, err)
+		return nil
+	}
+
+	return location
+}
+
+var BlockedLocations = map[string]bool{
+	"ECONOMÍA":             true,
+	"ECONOMIA":             true,
+	"CULTURA":              true,
+	"CIENCIA Y TECNOLOGÍA": true,
+	"CIENCIA Y TECNOLOGIA": true,
+	"CIENCIA":              true,
+	"TECNOLOGÍA":           true,
+	"TECNOLOGIA":           true,
+	"DEPORTES":             true,
+	"POLÍTICA":             true,
+	"POLITICA":             true,
+	"SOCIEDAD":             true,
+	"EDUCACIÓN":            true,
+	"EDUCACION":            true,
+	"SALUD":                true,
+	"MEDIO AMBIENTE":       true,
+	"MEDIOAMBIENTE":        true,
+	"INTERNACIONAL":        true,
+	"NACIONAL":             true,
+	"LOCAL":                true,
+	"REGIONAL":             true,
+	"AUTONÓMICO":           true,
+	"AUTONOMICO":           true,
+
+	"SCIENZA":        true,
+	"SPORT":          true,
+	"SALUTE":         true,
+	"AMBIENTE":       true,
+	"INTERNAZIONALE": true,
+	"NAZIONALE":      true,
+	"LOCALE":         true,
+	"REGIONALE":      true,
+	"CRONACA":        true,
+	"MONDO":          true,
+	"NOTIZIE":        true,
+	"ATTUALITÀ":      true,
+	"ATTUALITA":      true,
+
+	"GUERRA":            true,
+	"GUERRA EN UCRANIA": true,
+	"CONFLICTO":         true,
+	"CRISIS":            true,
+	"PANDEMIA":          true,
+	"COVID":             true,
+	"COVID-19":          true,
+	"CORONAVIRUS":       true,
+
+	"BUSINESS":      true,
+	"ENTERTAINMENT": true,
+	"SCIENCE":       true,
+	"TECHNOLOGY":    true,
+	"HEALTH":        true,
+	"SPORTS":        true,
+	"POLITICS":      true,
+	"WORLD":         true,
+	"NATIONAL":      true,
+	"BREAKING":      true,
+	"NEWS":          true,
+	"LATEST":        true,
+
+	"HOY":       true,
+	"AYER":      true,
+	"MAÑANA":    true,
+	"TODAY":     true,
+	"YESTERDAY": true,
+	"TOMORROW":  true,
+	"AHORA":     true,
+	"NOW":       true,
+
+	"NOTICIAS":      true,
+	"ÚLTIMA HORA":   true,
+	"ULTIMA HORA":   true,
+	"BREAKING NEWS": true,
+	"ACTUALIDAD":    true,
+	"INFORMACIÓN":   true,
+	"INFORMACION":   true,
+	"COMUNICADO":    true,
+	"DECLARACIONES": true,
+	"ENTREVISTA":    true,
+	"REPORTAJE":     true,
+	"ANÁLISIS":      true,
+	"ANALISIS":      true,
+	"OPINION":       true,
+	"OPINIÓN":       true,
+	"EDITORIAL":     true,
+
+	"JUVENTUD": true,
+	"MAYORES":  true,
+	"FAMILIA":  true,
+	"MUJERES":  true,
+	"HOMBRES":  true,
+	"NIÑOS":    true,
+	"NINOS":    true,
+	"ANCIANOS": true,
+
+	"FUTURO":     true,
+	"PASADO":     true,
+	"PRESENTE":   true,
+	"HISTORIA":   true,
+	"TRADICIÓN":  true,
+	"TRADICION":  true,
+	"MODERNIDAD": true,
+	"PROGRESO":   true,
+	"DESARROLLO": true,
+	"INNOVACIÓN": true,
+	"INNOVACION": true,
+
+	"TELEVISIÓN":     true,
+	"TELEVISION":     true,
+	"RADIO":          true,
+	"INTERNET":       true,
+	"REDES SOCIALES": true,
+	"PRENSA":         true,
+	"MEDIOS":         true,
+	"COMUNICACIÓN":   true,
+	"COMUNICACION":   true,
 }
 
 var CommonLocations = map[string]Location{
@@ -308,8 +561,8 @@ var CommonLocations = map[string]Location{
 		Name:      "San Antonio",
 	},
 	"SAN DIEGO": {
-		Longitude: -67.862549,
-		Latitude:  10.250244,
+		Longitude: -117.149048,
+		Latitude:  32.715736,
 		Name:      "San Diego",
 	},
 	"SAN FRANCISCO": {
@@ -496,5 +749,15 @@ var CommonLocations = map[string]Location{
 		Longitude: -74.297333,
 		Latitude:  4.570868,
 		Name:      "Colombia",
+	},
+	"UNITED STATES": {
+		Longitude: -95.712891,
+		Latitude:  37.09024,
+		Name:      "United States",
+	},
+	"UNITED KINGDOM": {
+		Longitude: -3.435973,
+		Latitude:  55.378051,
+		Name:      "United Kingdom",
 	},
 }

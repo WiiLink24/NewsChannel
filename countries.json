@@ -20,9 +20,15 @@
     },
     {
       "countryCode": 1,
-      "languageCode": 2,
+      "languageCode": 4,
       "name": "Spain",
       "language": "Spanish"
+    },
+    {
+      "countryCode": 2,
+      "languageCode": 5,
+      "name": "Italy",
+      "language": "Italian"
     }
   ]
 }

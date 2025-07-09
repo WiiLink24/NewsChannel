@@ -1,6 +1,7 @@
 package main
 
 import (
+	"NewsChannel/news/ansa"
 	"NewsChannel/news/reuters"
 	"NewsChannel/news/rtve"
 	_ "embed"
@@ -23,10 +24,15 @@ type Source struct {
 }
 
 func (n *News) GetNewsArticles() {
-	// Choose news source based on country - RTVE for Spain, Reuters for others
-	if n.currentCountry == "spain" {
-		n.source = rtve.NewRTVE(n.oldArticleTitles)
-	} else {
+	// Choose news source based on country
+	switch n.currentCountry {
+	case "spain":
+		rtveSource := rtve.NewRTVE(n.oldArticleTitles)
+		n.source = rtveSource
+	case "italy":
+		ansaSource := ansa.NewAnsa(n.oldArticleTitles)
+		n.source = ansaSource
+	default:
 		n.source = reuters.NewReuters(n.oldArticleTitles, n.currentCountry)
 	}
 
@@ -37,7 +43,7 @@ func (n *News) GetNewsArticles() {
 	}
 
 	// Save articles to file for inspection (Debug)
-	// n.debugSaveArticles()
+	n.debugSaveArticles()
 }
 
 func (n *News) MakeSourceTable() {
@@ -80,7 +86,7 @@ func (n *News) debugSaveArticles() {
 		return
 	}
 
-	// Structure 
+	// Structure
 	type DebugArticle struct {
 		Title     string `json:"title"`
 		Content   string `json:"content"`
