@@ -70,6 +70,8 @@ func main() {
 			n.currentCountry = "spain"
 		} else if countryConfig.LanguageCode == 5 {
 			n.currentCountry = "italy"
+		} else if countryConfig.LanguageCode == 3 {
+			n.currentCountry = "france"
 		} else {
 			n.currentCountry = reuters.GetCountry(countryConfig.CountryCode)
 		}
