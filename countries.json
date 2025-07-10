@@ -47,6 +47,12 @@
       "languageCode": 0,
       "name": "Japan",
       "language": "Japanese"
+    },
+    {
+      "countryCode": 0,
+      "languageCode": 2,
+      "name": "Germany",
+      "language": "German"
     }
   ]
 }
