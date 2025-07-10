@@ -41,6 +41,12 @@
       "languageCode": 6,
       "name": "Netherlands",
       "language": "Dutch"
+    },
+    {
+      "countryCode": 0,
+      "languageCode": 0,
+      "name": "Japan",
+      "language": "Japanese"
     }
   ]
 }

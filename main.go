@@ -75,6 +75,8 @@ func main() {
 			n.currentCountry = "france"
 		case 6:
 			n.currentCountry = "netherlands"
+		case 0:
+			n.currentCountry = "japan"
 		default:
 			n.currentCountry = reuters.GetCountry(countryConfig.CountryCode)
 		}

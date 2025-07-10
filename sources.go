@@ -6,6 +6,7 @@ import (
 	"NewsChannel/news/rtve"
 	"NewsChannel/news/france24"
 	"NewsChannel/news/nos"
+	"NewsChannel/news/nhk"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -40,6 +41,9 @@ func (n *News) GetNewsArticles() {
 	case "netherlands":
 		nosSource := nos.NewNos(n.oldArticleTitles)
 		n.source = nosSource
+	case "japan":
+		nhkSource := nhk.NewNHK(n.oldArticleTitles)
+		n.source = nhkSource
 	default:
 		n.source = reuters.NewReuters(n.oldArticleTitles, n.currentCountry)
 	}
