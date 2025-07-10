@@ -29,6 +29,18 @@
       "languageCode": 5,
       "name": "Italy",
       "language": "Italian"
+    },
+    {
+      "countryCode": 3,
+      "languageCode": 3,
+      "name": "France",
+      "language": "French"
+    },
+    {
+      "countryCode": 3,
+      "languageCode": 6,
+      "name": "Netherlands",
+      "language": "Dutch"
     }
   ]
 }

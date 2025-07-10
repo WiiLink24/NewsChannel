@@ -66,13 +66,16 @@ func main() {
 		n := News{}
 
 		// Choose news source based on language code
-		if countryConfig.LanguageCode == 4 {
+		switch countryConfig.LanguageCode {
+		case 4:
 			n.currentCountry = "spain"
-		} else if countryConfig.LanguageCode == 5 {
+		case 5:
 			n.currentCountry = "italy"
-		} else if countryConfig.LanguageCode == 3 {
+		case 3:
 			n.currentCountry = "france"
-		} else {
+		case 6:
+			n.currentCountry = "netherlands"
+		default:
 			n.currentCountry = reuters.GetCountry(countryConfig.CountryCode)
 		}
 
