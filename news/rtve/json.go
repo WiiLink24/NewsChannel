@@ -5,11 +5,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"regexp"
 	"strings"
 )
-
-var htmlRegex = regexp.MustCompile("<.*?>")
 
 func httpGet(url string) ([]byte, error) {
 	c := &http.Client{}
@@ -94,6 +91,8 @@ func (r *RTVE) getArticles(url string, topic news.Topic) ([]news.Article, error)
 			title = rtveArticle.LongTitle
 		}
 
+		title = news.CleanHTMLEntities(title)
+
 		// Check for duplicates
 		if news.IsDuplicateArticle(r.oldArticleTitles, title) {
 			continue
@@ -106,8 +105,7 @@ func (r *RTVE) getArticles(url string, topic news.Topic) ([]news.Article, error)
 			content = rtveArticle.Summary
 		}
 
-		// Clean HTML tags from content
-		content = htmlRegex.ReplaceAllString(content, "")
+		content = news.CleanHTMLEntities(content)
 
 		// Skip if no content
 		if len(strings.TrimSpace(content)) == 0 {

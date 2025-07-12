@@ -6,6 +6,9 @@ import (
 	"github.com/pmezard/go-difflib/difflib"
 	"golang.org/x/image/draw"
 	"image/jpeg"
+	"html"
+	"regexp"
+	"strings"
 
 	"image"
 	_ "image/jpeg"
@@ -39,4 +42,43 @@ func ConvertImage(data []byte) []byte {
 	}
 
 	return outputImgWriter.Bytes()
+}
+
+func CleanHTMLEntities(content string) string {
+	content = html.UnescapeString(content)
+
+	htmlTagRegex := regexp.MustCompile(`<[^>]*>`)
+	content = htmlTagRegex.ReplaceAllString(content, "")
+	
+	// RTVE specific tag that calls on another article
+	content = strings.ReplaceAll(content, "@@NOTICIA[16657506,IMAGEN,FIRMA]", "")
+
+	replacements := map[string]string{
+		"&nbsp;":   " ",
+		"&lt;":     "<",
+		"&gt;":     ">",
+		"&amp;":    "&",
+		"&quot;":   "\"",
+		"&apos;":   "'",
+		"&uacute;": "ú",
+		"&iacute;": "í",
+		"&oacute;": "ó",
+		"&aacute;": "á",
+		"&eacute;": "é",
+		"&ntilde;": "ñ",
+		"&Uacute;": "Ú",
+		"&Iacute;": "Í",
+		"&Oacute;": "Ó",
+		"&Aacute;": "Á",
+		"&Eacute;": "É",
+		"&Ntilde;": "Ñ",
+		"&uuml;":   "ü",
+		"&Uuml;":   "Ü",
+	}
+
+	for entity, char := range replacements {
+		content = strings.ReplaceAll(content, entity, char)
+	}
+
+	return strings.TrimSpace(content)
 }
