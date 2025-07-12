@@ -2,7 +2,6 @@ package main
 
 import (
 	"NewsChannel/news"
-	"NewsChannel/news/reuters"
 	"bytes"
 	"encoding/binary"
 	"fmt"
@@ -32,8 +31,7 @@ type News struct {
 	ImagesData     []byte
 	CaptionData    []uint16
 
-	source         news.Source
-	currentCountry reuters.Country
+	source news.Source
 
 	currentLanguageCode uint8
 	currentCountryCode  uint8
@@ -64,25 +62,6 @@ func main() {
 	// Process each country/language combination
 	for _, countryConfig := range config.Countries {
 		n := News{}
-
-		// Choose news source based on language code
-		switch countryConfig.LanguageCode {
-		case 4:
-			n.currentCountry = "spain"
-		case 5:
-			n.currentCountry = "italy"
-		case 3:
-			n.currentCountry = "france"
-		case 6:
-			n.currentCountry = "netherlands"
-		case 0:
-			n.currentCountry = "japan"
-		case 2:
-			n.currentCountry = "germany"
-		default:
-			n.currentCountry = reuters.GetCountry(countryConfig.CountryCode)
-		}
-
 		n.currentCountryCode = countryConfig.CountryCode
 		n.currentLanguageCode = countryConfig.LanguageCode
 
@@ -96,6 +75,7 @@ func main() {
 
 		buffer := new(bytes.Buffer)
 		n.ReadNewsCache()
+		n.setSource(countryConfig.Source)
 		n.GetNewsArticles()
 		n.MakeHeader()
 		n.MakeWiiMenuHeadlines()

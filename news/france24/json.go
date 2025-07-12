@@ -68,7 +68,7 @@ func httpGet(url string) ([]byte, error) {
 	return body, nil
 }
 
-func (f *france24) getArticles(url string, topic news.Topic) ([]news.Article, error) {
+func (a *france24) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	// Fetch RSS XML
 	data, err := httpGet(url)
 	if err != nil {
@@ -89,12 +89,12 @@ func (f *france24) getArticles(url string, topic news.Topic) ([]news.Article, er
 		}
 
 		// Check for duplicates
-		if news.IsDuplicateArticle(f.oldArticleTitles, item.Title) {
+		if news.IsDuplicateArticle(a.oldArticleTitles, item.Title) {
 			continue
 		}
 
 		// Get full article content by scraping the link
-		content, location, thumbnail := f.getFullArticle(item.Link)
+		content, location, thumbnail := a.getFullArticle(item.Link)
 
 		// Use description as fallback if content fetch fails
 		if content == "" {
@@ -134,7 +134,7 @@ func (f *france24) getArticles(url string, topic news.Topic) ([]news.Article, er
 	return articles, nil
 }
 
-func (f *france24) getFullArticle(articleURL string) (content string, location *news.Location, thumbnail *news.Thumbnail) {
+func (a *france24) getFullArticle(articleURL string) (content string, location *news.Location, thumbnail *news.Thumbnail) {
 	if articleURL == "" {
 		return "", nil, nil
 	}
@@ -147,14 +147,14 @@ func (f *france24) getFullArticle(articleURL string) (content string, location *
 
 	html := string(data)
 
-	content = f.extractArticleBody(html)
-	location = f.extractLocationFromContent(html)
-	thumbnail = f.extractThumbnail(html)
+	content = a.extractArticleBody(html)
+	location = a.extractLocationFromContent(html)
+	thumbnail = a.extractThumbnail(html)
 
 	return content, location, thumbnail
 }
 
-func (f *france24) extractArticleBody(html string) string {
+func (a *france24) extractArticleBody(html string) string {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
 		log.Println("Failed to parse HTML:", err)
@@ -190,7 +190,7 @@ func (f *france24) extractArticleBody(html string) string {
 	return content
 }
 
-func (f *france24) extractLocationFromContent(html string) *news.Location {
+func (a *france24) extractLocationFromContent(html string) *news.Location {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
 		log.Println("Failed to parse HTML:", err)
@@ -231,7 +231,7 @@ func (f *france24) extractLocationFromContent(html string) *news.Location {
 	return nil
 }
 
-func (f *france24) extractThumbnail(html string) *news.Thumbnail {
+func (a *france24) extractThumbnail(html string) *news.Thumbnail {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
 		log.Println("Failed to parse HTML:", err)

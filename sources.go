@@ -2,11 +2,11 @@ package main
 
 import (
 	"NewsChannel/news/ansa"
+	"NewsChannel/news/france24"
+	"NewsChannel/news/nhk"
+	"NewsChannel/news/nos"
 	"NewsChannel/news/reuters"
 	"NewsChannel/news/rtve"
-	"NewsChannel/news/france24"
-	"NewsChannel/news/nos"
-	"NewsChannel/news/nhk"
 	"NewsChannel/news/welt"
 	_ "embed"
 	"encoding/json"
@@ -27,31 +27,32 @@ type Source struct {
 	CopyrightOffset uint32
 }
 
-func (n *News) GetNewsArticles() {
-	// Choose news source based on country
-	switch n.currentCountry {
-	case "spain":
+func (n *News) setSource(sourceName string) {
+	switch sourceName {
+	case "rtve":
 		rtveSource := rtve.NewRTVE(n.oldArticleTitles)
 		n.source = rtveSource
-	case "italy":
+	case "ansa":
 		ansaSource := ansa.NewAnsa(n.oldArticleTitles)
 		n.source = ansaSource
-	case "france":
+	case "france24":
 		franceSource := france24.NewFrance24(n.oldArticleTitles)
 		n.source = franceSource
-	case "netherlands":
+	case "nos":
 		nosSource := nos.NewNos(n.oldArticleTitles)
 		n.source = nosSource
-	case "japan":
+	case "nhk":
 		nhkSource := nhk.NewNHK(n.oldArticleTitles)
 		n.source = nhkSource
-	case "germany":
+	case "welt":
 		weltSource := welt.NewWelt(n.oldArticleTitles)
 		n.source = weltSource
 	default:
-		n.source = reuters.NewReuters(n.oldArticleTitles, n.currentCountry)
+		n.source = reuters.NewReuters(n.oldArticleTitles, n.currentCountryCode)
 	}
+}
 
+func (n *News) GetNewsArticles() {
 	var err error
 	n.articles, err = n.source.GetArticles()
 	if err != nil {
@@ -91,7 +92,7 @@ func (n *News) MakeSourceTable() {
 // debugSaveArticles saves the fetched articles to a readable JSON file so you can see what was fetched.
 func (n *News) debugSaveArticles() {
 	if len(n.articles) == 0 {
-		fmt.Printf("No articles found for country: %s\n", n.currentCountry)
+		fmt.Printf("No articles found for country: %d\n", n.currentCountryCode)
 		return
 	}
 
@@ -156,7 +157,7 @@ func (n *News) debugSaveArticles() {
 
 	// Create filename with timestamp and country
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
-	filename := fmt.Sprintf("debug/articles_%s_%s.json", n.currentCountry, timestamp)
+	filename := fmt.Sprintf("debug/articles_%d_%s.json", n.currentCountryCode, timestamp)
 
 	// Save to JSON file
 	jsonData, err := json.MarshalIndent(debugArticles, "", "  ")

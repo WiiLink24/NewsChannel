@@ -4,55 +4,64 @@
       "countryCode": 18,
       "languageCode": 1,
       "name": "Canada",
-      "language": "English"
+      "language": "English",
+      "source": "reuters"
     },
     {
       "countryCode": 49,
       "languageCode": 1,
       "name": "United States",
-      "language": "English"
+      "language": "English",
+      "source": "reuters"
     },
     {
       "countryCode": 110,
       "languageCode": 1,
       "name": "United Kingdom",
-      "language": "English"
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 105,
+      "languageCode": 4,
+      "name": "Spain",
+      "language": "Spanish",
+      "source": "rtve"
+    },
+    {
+      "countryCode": 83,
+      "languageCode": 5,
+      "name": "Italy",
+      "language": "Italian",
+      "source": "ansa"
+    },
+    {
+      "countryCode": 77,
+      "languageCode": 3,
+      "name": "France",
+      "language": "French",
+      "source": "france24"
+    },
+    {
+      "countryCode": 94,
+      "languageCode": 6,
+      "name": "Netherlands",
+      "language": "Dutch",
+      "source": "nos"
     },
     {
       "countryCode": 1,
-      "languageCode": 4,
-      "name": "Spain",
-      "language": "Spanish"
-    },
-    {
-      "countryCode": 2,
-      "languageCode": 5,
-      "name": "Italy",
-      "language": "Italian"
-    },
-    {
-      "countryCode": 3,
-      "languageCode": 3,
-      "name": "France",
-      "language": "French"
-    },
-    {
-      "countryCode": 3,
-      "languageCode": 6,
-      "name": "Netherlands",
-      "language": "Dutch"
-    },
-    {
-      "countryCode": 0,
       "languageCode": 0,
       "name": "Japan",
-      "language": "Japanese"
+      "language": "Japanese",
+      "source": "nhk"
     },
     {
-      "countryCode": 0,
+      "countryCode": 78,
       "languageCode": 2,
       "name": "Germany",
-      "language": "German"
+      "language": "German",
+      "source": "welt"
     }
   ]
 }
