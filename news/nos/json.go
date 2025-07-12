@@ -3,10 +3,7 @@ package nos
 import (
 	"NewsChannel/news"
 	"encoding/xml"
-	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -41,30 +38,9 @@ type nos struct {
 	oldArticleTitles []string
 }
 
-func httpGet(url string) ([]byte, error) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := client.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("HTTP request failed: %v", err)
-	}
-
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
-}
-
 func (f *nos) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	// Fetch RSS XML
-	data, err := httpGet(url)
+	data, err := news.HttpGet(url)
 	if err != nil {
 		return nil, err
 	}
@@ -96,11 +72,12 @@ func (f *nos) getArticles(url string, topic news.Topic) ([]news.Article, error) 
 		// Get thumbnail from RSS
 		var thumbnail *news.Thumbnail
 		if item.Enclosure.URL != "" && strings.Contains(item.Enclosure.Type, "image") {
-			imageData, err := httpGet(item.Enclosure.URL)
+			imageData, err := news.HttpGet(item.Enclosure.URL)
 			if err == nil && len(imageData) > 0 {
+				caption := f.extractImageCaption(item.Link)
 				thumbnail = &news.Thumbnail{
 					Image:   news.ConvertImage(imageData),
-					Caption: "",
+					Caption: caption,
 				}
 			}
 		}
@@ -143,7 +120,7 @@ func (f *nos) getLocationFromArticlePage(articleURL string) *news.Location {
 		return nil
 	}
 
-	data, err := httpGet(articleURL)
+	data, err := news.HttpGet(articleURL)
 	if err != nil {
 		log.Printf("Failed to fetch article page for location: %v", err)
 		return nil
@@ -180,4 +157,32 @@ func (f *nos) extractLocationFromContent(html string) *news.Location {
 	})
 
 	return foundLocation
+}
+
+func (f *nos) extractImageCaption(articleURL string) string {
+	if articleURL == "" {
+		return ""
+	}
+
+	data, err := news.HttpGet(articleURL)
+	if err != nil {
+		return ""
+	}
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(data)))
+	if err != nil {
+		return ""
+	}
+
+	ariaLabel, exists := doc.Find("button[aria-label*='copyright']").Attr("aria-label")
+	if exists && ariaLabel != "" {
+		if strings.Contains(ariaLabel, "copyright:") {
+			parts := strings.Split(ariaLabel, "copyright:")
+			if len(parts) > 1 {
+				return strings.TrimSpace(parts[1])
+			}
+		}
+	}
+
+	return ""
 }

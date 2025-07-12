@@ -111,6 +111,7 @@ func (n *News) debugSaveArticles() {
 		Location  string `json:"location"`
 		HasImage  bool   `json:"hasImage"`
 		ImageSize int    `json:"imageSize"`
+		ImageCaption string `json:"imageCaption"`
 	}
 
 	var debugArticles []DebugArticle
@@ -152,6 +153,7 @@ func (n *News) debugSaveArticles() {
 			Location:  location,
 			HasImage:  hasImage,
 			ImageSize: imageSize,
+			ImageCaption: article.Thumbnail.Caption,
 		})
 	}
 

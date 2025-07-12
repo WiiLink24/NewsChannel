@@ -3,10 +3,7 @@ package ansa
 import (
 	"NewsChannel/news"
 	"encoding/xml"
-	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"regexp"
 	"strings"
 
@@ -34,32 +31,9 @@ type Item struct {
 	GUID        string `xml:"guid"`
 }
 
-func httpGet(url string) ([]byte, error) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
-
-	resp, err := client.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("HTTP request failed: %v", err)
-	}
-
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
-}
-
 func (a *ANSA) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	// Fetch RSS XML
-	data, err := httpGet(url)
+	data, err := news.HttpGet(url, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +91,7 @@ func (a *ANSA) getFullArticle(articleURL string) (content string, location *news
 		return "", nil, nil
 	}
 
-	data, err := httpGet(articleURL)
+	data, err := news.HttpGet(articleURL, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 	if err != nil {
 		log.Printf("Failed to fetch article content from %s: %v", articleURL, err)
 		return "", nil, nil
@@ -219,13 +193,30 @@ func (a *ANSA) extractThumbnail(html string) *news.Thumbnail {
 		return nil
 	}
 
-	imageData, err := httpGet(imageURL)
+	imageData, err := news.HttpGet(imageURL, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 	if err != nil || len(imageData) == 0 {
 		return nil
 	}
 
+	caption := ""
+
+	// Try to find caption in figure data-caption attribute
+	doc.Find("figure.image a[data-caption]").Each(func(i int, s *goquery.Selection) {
+		if dataCap, exists := s.Attr("data-caption"); exists {
+			caption = strings.TrimSpace(dataCap)
+			return
+		}
+	})
+
+	// Fallback to .image-caption if data-caption not found
+	if caption == "" {
+		doc.Find(".image-caption").Each(func(i int, s *goquery.Selection) {
+			caption = strings.TrimSpace(s.Text())
+		})
+	}
+
 	return &news.Thumbnail{
 		Image:   news.ConvertImage(imageData),
-		Caption: "",
+		Caption: caption,
 	}
 }

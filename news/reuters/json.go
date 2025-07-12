@@ -4,41 +4,14 @@ import (
 	"NewsChannel/news"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"regexp"
 	"strings"
 )
 
 var htmlRegex = regexp.MustCompile("<.*?>")
 
-func httpGet(url string) ([]byte, error) {
-	c := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// User-Agent derived from the iPadOS version of the Reuters App. Bypasses the no JS screen.
-	req.Header.Set("User-Agent", "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
-
-	resp, err := c.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, err
-	}
-
-	// Read the body
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
-}
-
 func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, error) {
-	data, err := httpGet(url)
+	data, err := news.HttpGet(url, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +47,7 @@ func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, err
 			// The mobile API is much easier to parse.
 			articlePath := story.(map[string]any)["url"]
 			articleURL := fmt.Sprintf("https://www.reuters.com/mobile/v1%s", articlePath)
-			articleData, err := httpGet(articleURL)
+			articleData, err := news.HttpGet(articleURL, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
 			if err != nil {
 				return nil, err
 			}
@@ -161,7 +134,7 @@ func getThumbnail(root []map[string]any) (*news.Thumbnail, error) {
 
 		// Add the required params
 		thumbnailURL = fmt.Sprintf("%s&width=200&height=200", thumbnailURL)
-		data, err := httpGet(thumbnailURL)
+		data, err := news.HttpGet(thumbnailURL, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
 		if err != nil {
 			return nil, err
 		}

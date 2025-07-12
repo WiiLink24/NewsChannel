@@ -3,31 +3,8 @@ package rtve
 import (
 	"NewsChannel/news"
 	"encoding/json"
-	"io"
-	"net/http"
 	"strings"
 )
-
-func httpGet(url string) ([]byte, error) {
-	c := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
-}
 
 // RTVEResponse represents the structure of RTVE API response
 type RTVEResponse struct {
@@ -68,7 +45,7 @@ type RTVEArticle struct {
 }
 
 func (r *RTVE) getArticles(url string, topic news.Topic) ([]news.Article, error) {
-	data, err := httpGet(url)
+	data, err := news.HttpGet(url)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +97,7 @@ func (r *RTVE) getArticles(url string, topic news.Topic) ([]news.Article, error)
 		}
 
 		if imageURL != "" {
-			thumbnail, _ = r.getThumbnail(imageURL) // Ignore errors, continue without thumbnail
+			thumbnail, _ = r.getThumbnail(imageURL, rtveArticle.HTMLUrl)
 		}
 
 		// Parse location from content, category, and other topics
@@ -140,7 +117,7 @@ func (r *RTVE) getArticles(url string, topic news.Topic) ([]news.Article, error)
 	return articles, nil
 }
 
-func (r *RTVE) getThumbnail(imageURL string) (*news.Thumbnail, error) {
+func (r *RTVE) getThumbnail(imageURL string, articleURL string) (*news.Thumbnail, error) {
 	if imageURL == "" {
 		return nil, nil
 	}
@@ -156,7 +133,7 @@ func (r *RTVE) getThumbnail(imageURL string) (*news.Thumbnail, error) {
 		}
 	}
 
-	data, err := httpGet(imageURL)
+	data, err := news.HttpGet(imageURL)
 	if err != nil {
 		return nil, err
 	}
@@ -165,9 +142,11 @@ func (r *RTVE) getThumbnail(imageURL string) (*news.Thumbnail, error) {
 		return nil, nil
 	}
 
+	caption := news.ExtractImageCaption(articleURL, "figcaption.figcaption span")
+
 	return &news.Thumbnail{
 		Image:   news.ConvertImage(data),
-		Caption: "",
+		Caption: caption,
 	}, nil
 }
 

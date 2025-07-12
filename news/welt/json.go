@@ -3,10 +3,7 @@ package welt
 import (
 	"NewsChannel/news"
 	"encoding/xml"
-	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"regexp"
 	"strings"
 
@@ -54,30 +51,9 @@ type welt struct {
 	oldArticleTitles []string
 }
 
-func httpGet(url string) ([]byte, error) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := client.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("HTTP request failed: %v", err)
-	}
-
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
-}
-
 func (f *welt) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	// Fetch RSS XML
-	data, err := httpGet(url)
+	data, err := news.HttpGet(url)
 	if err != nil {
 		return nil, err
 	}
@@ -130,13 +106,14 @@ func (f *welt) getArticles(url string, topic news.Topic) ([]news.Article, error)
 
 		var thumbnail *news.Thumbnail
 		if item.MediaContent.Thumbnail.URL != "" {
-			imageData, err := httpGet(item.MediaContent.Thumbnail.URL)
+			imageData, err := news.HttpGet(item.MediaContent.Thumbnail.URL)
 			if err == nil && len(imageData) > 0 {
 				convertedImage := news.ConvertImage(imageData)
+				caption := news.ExtractImageCaption(item.Link, "span.c-content-image__caption-source")
 				if convertedImage != nil {
 					thumbnail = &news.Thumbnail{
 						Image:   convertedImage,
-						Caption: "",
+						Caption: caption,
 					}
 				}
 			}
@@ -161,7 +138,7 @@ func (f *welt) scrapeArticleContent(articleURL string) string {
 		return ""
 	}
 
-	data, err := httpGet(articleURL)
+	data, err := news.HttpGet(articleURL)
 	if err != nil {
 		log.Printf("Failed to fetch article content from %s: %v", articleURL, err)
 		return ""

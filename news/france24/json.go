@@ -3,10 +3,7 @@ package france24
 import (
 	"NewsChannel/news"
 	"encoding/xml"
-	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"regexp"
 	"strings"
 
@@ -47,30 +44,9 @@ type france24 struct {
 	oldArticleTitles []string
 }
 
-func httpGet(url string) ([]byte, error) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := client.Do(req)
-	if err != nil || resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("HTTP request failed: %v", err)
-	}
-
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
-}
-
 func (a *france24) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	// Fetch RSS XML
-	data, err := httpGet(url)
+	data, err := news.HttpGet(url)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +87,7 @@ func (a *france24) getArticles(url string, topic news.Topic) ([]news.Article, er
 
 		// Use media thumbnail if available
 		if thumbnail == nil && item.MediaThumbnail.URL != "" {
-			imageData, err := httpGet(item.MediaThumbnail.URL)
+			imageData, err := news.HttpGet(item.MediaThumbnail.URL)
 			if err == nil && len(imageData) > 0 {
 				thumbnail = &news.Thumbnail{
 					Image:   news.ConvertImage(imageData),
@@ -139,7 +115,7 @@ func (a *france24) getFullArticle(articleURL string) (content string, location *
 		return "", nil, nil
 	}
 
-	data, err := httpGet(articleURL)
+	data, err := news.HttpGet(articleURL)
 	if err != nil {
 		log.Printf("Failed to fetch article content from %s: %v", articleURL, err)
 		return "", nil, nil
@@ -259,13 +235,28 @@ func (a *france24) extractThumbnail(html string) *news.Thumbnail {
 		imageURL = "https://www.france24.com" + imageURL
 	}
 
-	imageData, err := httpGet(imageURL)
+	imageData, err := news.HttpGet(imageURL)
 	if err != nil || len(imageData) == 0 {
 		return nil
 	}
 
+	caption := ""
+    doc.Find("figure.m-item-image figcaption.a-figcaption").Each(func(i int, s *goquery.Selection) {
+        var captionParts []string
+        s.Find("span").Each(func(j int, span *goquery.Selection) {
+            text := strings.TrimSpace(span.Text())
+            if text != "" {
+                captionParts = append(captionParts, text)
+            }
+        })
+        if len(captionParts) > 0 {
+            caption = strings.Join(captionParts, " ")
+            return
+        }
+    })
+
 	return &news.Thumbnail{
 		Image:   news.ConvertImage(imageData),
-		Caption: "",
+		Caption: caption,
 	}
 }
