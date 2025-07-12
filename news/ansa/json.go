@@ -13,8 +13,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-var htmlRegex = regexp.MustCompile("<.*?>")
-
 // RSS structures for parsing ANSA XML feeds
 type RSS struct {
 	XMLName xml.Name `xml:"rss"`
@@ -93,7 +91,7 @@ func (a *ANSA) getArticles(url string, topic news.Topic) ([]news.Article, error)
 		}
 
 		// Clean HTML tags from content
-		content = htmlRegex.ReplaceAllString(content, "")
+		content = news.CleanHTMLEntities(content)
 
 		// Skip if no content
 		if len(strings.TrimSpace(content)) == 0 {
