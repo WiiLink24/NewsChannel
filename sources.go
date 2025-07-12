@@ -60,7 +60,7 @@ func (n *News) GetNewsArticles() {
 	}
 
 	// Save articles to file for inspection (Debug)
-	n.debugSaveArticles()
+	// n.debugSaveArticles()
 }
 
 func (n *News) MakeSourceTable() {
