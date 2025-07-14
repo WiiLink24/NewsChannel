@@ -32,7 +32,7 @@ type NewsCache struct {
 // This is quite an annoying job as for some reason it needs to make the timestamp table for every single article, even ones
 // from past hours. Due to this we are required to cache what articles we used.
 func (n *News) ReadNewsCache() {
-	topics := n.GetTopicsForCountry()
+	topics := n.GetTopicsForLanguage()
 	topicsLength := len(topics) + 1
 
 	n.topics = make([]Topic, topicsLength)
@@ -69,7 +69,7 @@ func (n *News) MakeTopicTable() {
 	n.Header.TopicTableOffset = n.GetCurrentSize()
 	n.Topics = n.topics
 
-	topics := n.GetTopicsForCountry()
+	topics := n.GetTopicsForLanguage()
 	topicsLength := len(topics) + 1
 	n.Header.NumberOfTopics = uint32(topicsLength)
 
