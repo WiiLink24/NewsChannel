@@ -7,9 +7,37 @@ import (
 	"crypto/rsa"
 	"crypto/sha1"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"os"
 )
+
+type CountryConfig struct {
+	CountryCode  uint8  `json:"countryCode"`
+	LanguageCode uint8  `json:"languageCode"`
+	Name         string `json:"name"`
+	Language     string `json:"language"`
+	Source       string `json:"source"`
+}
+
+type Config struct {
+	Countries []CountryConfig `json:"countries"`
+}
+
+func LoadConfig(filename string) (*Config, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	var config Config
+	err = json.Unmarshal(data, &config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &config, nil
+}
 
 // fixTime adjusts the timestamp to coincide with the Wii's UTC timestamp.
 func fixTime(value int) uint32 {

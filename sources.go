@@ -1,8 +1,18 @@
 package main
 
 import (
+	"NewsChannel/news/ansa"
+	"NewsChannel/news/france24"
+	"NewsChannel/news/nhk"
+	"NewsChannel/news/nos"
 	"NewsChannel/news/reuters"
+	"NewsChannel/news/rtve"
+	"NewsChannel/news/welt"
 	_ "embed"
+	"encoding/json"
+	"fmt"
+	"os"
+	"time"
 )
 
 type Source struct {
@@ -17,14 +27,40 @@ type Source struct {
 	CopyrightOffset uint32
 }
 
-func (n *News) GetNewsArticles() {
-	n.source = reuters.NewReuters(n.oldArticleTitles, n.currentCountry)
+func (n *News) setSource(sourceName string) {
+	switch sourceName {
+	case "rtve":
+		rtveSource := rtve.NewRTVE(n.oldArticleTitles)
+		n.source = rtveSource
+	case "ansa":
+		ansaSource := ansa.NewAnsa(n.oldArticleTitles)
+		n.source = ansaSource
+	case "france24":
+		franceSource := france24.NewFrance24(n.oldArticleTitles)
+		n.source = franceSource
+	case "nos":
+		nosSource := nos.NewNos(n.oldArticleTitles)
+		n.source = nosSource
+	case "nhk":
+		nhkSource := nhk.NewNHK(n.oldArticleTitles)
+		n.source = nhkSource
+	case "welt":
+		weltSource := welt.NewWelt(n.oldArticleTitles)
+		n.source = weltSource
+	default:
+		n.source = reuters.NewReuters(n.oldArticleTitles, n.currentCountryCode)
+	}
+}
 
+func (n *News) GetNewsArticles() {
 	var err error
 	n.articles, err = n.source.GetArticles()
 	if err != nil {
 		panic(err)
 	}
+
+	// Save articles to file for inspection (Debug)
+	// n.debugSaveArticles()
 }
 
 func (n *News) MakeSourceTable() {
@@ -51,4 +87,92 @@ func (n *News) MakeSourceTable() {
 	}
 
 	n.Header.NumberOfSources = 1
+}
+
+// debugSaveArticles saves the fetched articles to a readable JSON file so you can see what was fetched.
+func (n *News) debugSaveArticles() {
+	if len(n.articles) == 0 {
+		fmt.Printf("No articles found for country: %d\n", n.currentCountryCode)
+		return
+	}
+
+	// Create directory
+	err := os.MkdirAll("debug", 0755)
+	if err != nil {
+		fmt.Printf("Error creating debug directory: %v\n", err)
+		return
+	}
+
+	// Structure
+	type DebugArticle struct {
+		Title     string `json:"title"`
+		Content   string `json:"content"`
+		Topic     string `json:"topic"`
+		Location  string `json:"location"`
+		HasImage  bool   `json:"hasImage"`
+		ImageSize int    `json:"imageSize"`
+		ImageCaption string `json:"imageCaption"`
+	}
+
+	var debugArticles []DebugArticle
+	topicNames := []string{"National", "International", "Sports", "Entertainment", "Business", "Science", "Technology"}
+
+	for _, article := range n.articles {
+		var content string
+		if article.Content != nil {
+			content = *article.Content
+		} else {
+			content = "No content"
+		}
+
+		var location string
+		if article.Location != nil {
+			location = article.Location.Name
+		} else {
+			location = "No location"
+		}
+
+		var topicName string
+		if int(article.Topic) < len(topicNames) {
+			topicName = topicNames[article.Topic]
+		} else {
+			topicName = fmt.Sprintf("Topic_%d", article.Topic)
+		}
+
+		var hasImage bool
+		var imageSize int
+		if article.Thumbnail != nil {
+			hasImage = true
+			imageSize = len(article.Thumbnail.Image)
+		}
+
+		debugArticles = append(debugArticles, DebugArticle{
+			Title:     article.Title,
+			Content:   content,
+			Topic:     topicName,
+			Location:  location,
+			HasImage:  hasImage,
+			ImageSize: imageSize,
+			ImageCaption: article.Thumbnail.Caption,
+		})
+	}
+
+	// Create filename with timestamp and country
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+	filename := fmt.Sprintf("debug/articles_%d_%s.json", n.currentCountryCode, timestamp)
+
+	// Save to JSON file
+	jsonData, err := json.MarshalIndent(debugArticles, "", "  ")
+	if err != nil {
+		fmt.Printf("Error marshaling articles: %v\n", err)
+		return
+	}
+
+	err = os.WriteFile(filename, jsonData, 0644)
+	if err != nil {
+		fmt.Printf("Error writing debug file: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Debug: Saved %d articles to %s\n", len(debugArticles), filename)
 }

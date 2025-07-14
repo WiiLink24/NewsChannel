@@ -25,14 +25,14 @@ type Reuters struct {
 //go:embed logo.jpg
 var Logo []byte
 
-func NewReuters(oldArticleTitles []string, country Country) *Reuters {
+func NewReuters(oldArticleTitles []string, countryCode uint8) *Reuters {
 	return &Reuters{
 		oldArticleTitles: oldArticleTitles,
-		country:          country,
+		country:          getCountry(countryCode),
 	}
 }
 
-func GetCountry(code uint8) Country {
+func getCountry(code uint8) Country {
 	switch code {
 	case 78:
 		return Germany

@@ -2,16 +2,16 @@ package main
 
 import (
 	"NewsChannel/news"
-	"NewsChannel/news/reuters"
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/wii-tools/lzx/lz10"
 	"hash/crc32"
 	"io"
 	"log"
 	"os"
 	"time"
+
+	"github.com/wii-tools/lzx/lz10"
 )
 
 type News struct {
@@ -31,8 +31,7 @@ type News struct {
 	ImagesData     []byte
 	CaptionData    []uint16
 
-	source         news.Source
-	currentCountry reuters.Country
+	source news.Source
 
 	currentLanguageCode uint8
 	currentCountryCode  uint8
@@ -56,15 +55,19 @@ type News struct {
 var currentTime = 0
 
 func main() {
-	// TODO: All Countries!!!!!
-	// TODO: Also all languages
-	// Currently just doing Canada, U.S.A. and the United Kingdom.
-	countries := []uint8{18, 49, 110}
-	for _, country := range countries {
+	// Load configuration from JSON file instead of having random numbers (added Spain btw)
+	config, err := LoadConfig("countries.json")
+	checkError(err)
+
+	// Process each country/language combination
+	for _, countryConfig := range config.Countries {
 		n := News{}
-		n.currentCountry = reuters.GetCountry(country)
-		n.currentCountryCode = country
-		n.currentLanguageCode = 1
+		n.currentCountryCode = countryConfig.CountryCode
+		n.currentLanguageCode = countryConfig.LanguageCode
+
+		log.Printf("Processing %s (%s) - Country: %d, Language: %d",
+			countryConfig.Name, countryConfig.Language,
+			countryConfig.CountryCode, countryConfig.LanguageCode)
 
 		t := time.Now()
 		currentTime = int(t.Unix())
@@ -72,6 +75,7 @@ func main() {
 
 		buffer := new(bytes.Buffer)
 		n.ReadNewsCache()
+		n.setSource(countryConfig.Source)
 		n.GetNewsArticles()
 		n.MakeHeader()
 		n.MakeWiiMenuHeadlines()
@@ -102,6 +106,8 @@ func main() {
 
 		err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed), 0666)
 		checkError(err)
+
+		log.Printf("Successfully generated news file for %s (%s)", countryConfig.Name, countryConfig.Language)
 	}
 }
 
