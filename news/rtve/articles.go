@@ -65,7 +65,7 @@ func (r *RTVE) GetInternationalArticles() ([]news.Article, error) {
 }
 
 func (r *RTVE) GetSportsArticles() ([]news.Article, error) {
-	url := "http://www.rtve.es/servicios/scraper/?feed=/deportes&source=editorial&order=section"
+	url := "http://api.rtve.es/api/tematicas/816/noticias.json?order=publication_date,desc"
 	return r.getArticles(url, news.Sports)
 }
 
