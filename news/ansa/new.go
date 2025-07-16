@@ -20,3 +20,7 @@ func NewAnsa(oldArticleTitles []string) *ANSA {
 func (a *ANSA) GetLogo() []byte {
 	return Logo
 }
+
+func (a *ANSA) GetCopyright() string {
+	return "© ANSA. All rights reserved."
+}

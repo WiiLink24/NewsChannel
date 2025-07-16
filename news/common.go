@@ -4,6 +4,8 @@ package news
 type Source interface {
 	GetArticles() ([]Article, error)
 	GetLogo() []byte
+	GetCopyright() string
+	GetName() string
 }
 
 type Article struct {

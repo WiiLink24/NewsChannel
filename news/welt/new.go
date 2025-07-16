@@ -16,3 +16,7 @@ func NewWelt(oldArticleTitles []string) *welt {
 func (a *welt) GetLogo() []byte {
 	return Logo
 }
+
+func (a *welt) GetCopyright() string {
+	return "© WELT. All rights reserved."
+}

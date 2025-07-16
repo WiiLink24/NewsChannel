@@ -16,3 +16,7 @@ func NewNHK(oldArticleTitles []string) *nhk {
 func (a *nhk) GetLogo() []byte {
 	return Logo
 }
+
+func (a *nhk) GetCopyright() string {
+	return "© NHK. All rights reserved."
+}

@@ -22,3 +22,7 @@ func NewRTVE(oldArticleTitles []string) *RTVE {
 func (r *RTVE) GetLogo() []byte {
 	return Logo
 }
+
+func (r *RTVE) GetCopyright() string {
+	return "© RTVE. All rights reserved."
+}

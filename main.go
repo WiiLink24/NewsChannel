@@ -15,21 +15,23 @@ import (
 )
 
 type News struct {
-	Header         Header
-	Headlines      []Headlines
-	HeadlineText   []uint16
-	Topics         []Topic
-	Timestamps     []Timestamp
-	TopicText      []uint16
-	Articles       []Article
-	ArticleText    []uint16
-	Sources        []Source
-	SourcePictures []byte
-	Locations      []Location
-	LocationText   []uint16
-	Images         []Image
-	ImagesData     []byte
-	CaptionData    []uint16
+	Header          Header
+	Headlines       []Headlines
+	HeadlineText    []uint16
+	Topics          []Topic
+	Timestamps      []Timestamp
+	TopicText       []uint16
+	Articles        []Article
+	ArticleText     []uint16
+	Sources         []Source
+	SourcePictures  []byte
+	SourceName      []byte
+	SourceCopyright []byte
+	Locations       []Location
+	LocationText    []uint16
+	Images          []Image
+	ImagesData      []byte
+	CaptionData     []uint16
 
 	source news.Source
 

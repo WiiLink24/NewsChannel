@@ -67,6 +67,7 @@ func (n *News) MakeSourceTable() {
 	n.Header.SourceTableOffset = n.GetCurrentSize()
 
 	logo := n.source.GetLogo()
+	copyright := n.source.GetCopyright()
 
 	n.Sources = append(n.Sources, Source{
 		Logo:            0,
@@ -75,7 +76,7 @@ func (n *News) MakeSourceTable() {
 		PictureOffset:   0,
 		NameSize:        0,
 		NameOffset:      0,
-		CopyrightSize:   0,
+		CopyrightSize:   uint32(len(copyright)),
 		CopyrightOffset: 0,
 	})
 
@@ -84,6 +85,13 @@ func (n *News) MakeSourceTable() {
 
 	for n.GetCurrentSize()%4 != 0 {
 		n.SourcePictures = append(n.SourcePictures, 0)
+	}
+
+	n.Sources[0].CopyrightOffset = n.GetCurrentSize()
+	n.SourceCopyright = []byte(copyright)
+
+	for n.GetCurrentSize()%4 != 0 {
+		n.SourceCopyright = append(n.SourceCopyright, 0)
 	}
 
 	n.Header.NumberOfSources = 1
@@ -105,12 +113,12 @@ func (n *News) debugSaveArticles() {
 
 	// Structure
 	type DebugArticle struct {
-		Title     string `json:"title"`
-		Content   string `json:"content"`
-		Topic     string `json:"topic"`
-		Location  string `json:"location"`
-		HasImage  bool   `json:"hasImage"`
-		ImageSize int    `json:"imageSize"`
+		Title        string `json:"title"`
+		Content      string `json:"content"`
+		Topic        string `json:"topic"`
+		Location     string `json:"location"`
+		HasImage     bool   `json:"hasImage"`
+		ImageSize    int    `json:"imageSize"`
 		ImageCaption string `json:"imageCaption"`
 	}
 
@@ -147,12 +155,12 @@ func (n *News) debugSaveArticles() {
 		}
 
 		debugArticles = append(debugArticles, DebugArticle{
-			Title:     article.Title,
-			Content:   content,
-			Topic:     topicName,
-			Location:  location,
-			HasImage:  hasImage,
-			ImageSize: imageSize,
+			Title:        article.Title,
+			Content:      content,
+			Topic:        topicName,
+			Location:     location,
+			HasImage:     hasImage,
+			ImageSize:    imageSize,
 			ImageCaption: article.Thumbnail.Caption,
 		})
 	}

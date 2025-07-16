@@ -50,3 +50,7 @@ func getCountry(code uint8) Country {
 func (r *Reuters) GetLogo() []byte {
 	return Logo
 }
+
+func (r *Reuters) GetCopyright() string {
+	return "© Reuters. All rights reserved."
+}

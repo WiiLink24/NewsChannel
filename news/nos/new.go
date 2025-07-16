@@ -16,3 +16,7 @@ func NewNos(oldArticleTitles []string) *nos {
 func (a *nos) GetLogo() []byte {
 	return Logo
 }
+
+func (a *nos) GetCopyright() string {
+	return "© NOS. All rights reserved."
+}

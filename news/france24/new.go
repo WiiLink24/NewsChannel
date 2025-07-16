@@ -16,3 +16,7 @@ func NewFrance24(oldArticleTitles []string) *france24 {
 func (a *france24) GetLogo() []byte {
 	return Logo
 }
+
+func (a *france24) GetCopyright() string {
+	return "© France 24. All rights reserved."
+}
