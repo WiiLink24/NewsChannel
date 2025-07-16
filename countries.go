@@ -4,7 +4,7 @@ func (n *News) GetTopicsForLanguage() []string {
 	switch n.currentLanguageCode {
 	case 0:
 		// TODO: I need jess to alive
-		return []string{"社会", "国際", "スポーツ", "芸能文化", "経済", "Science", "Technology"}
+		return []string{"社会", "国際", "スポーツ", "芸能文化", "経済", "科学", "テクノロジー"}
 	case 2:
 		return []string{"Deutschland", "Weltnachrichten", "Sport", "Unterhaltung", "Wirtschaft", "Gesundheit/Medizin", "Technik"}
 	case 3:
