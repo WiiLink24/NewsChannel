@@ -82,6 +82,9 @@ func (r *RTVE) getArticles(url string, topic news.Topic) ([]news.Article, error)
 			content = rtveArticle.Summary
 		}
 
+		// Cahnge "</p><p>" to "\n\n" for better readability
+		content = strings.ReplaceAll(content, "</p><p>", "\n\n")
+
 		content = news.CleanHTMLEntities(content)
 
 		// Skip if no content

@@ -81,8 +81,15 @@ func CleanHTMLEntities(content string) string {
 	content = htmlTagRegex.ReplaceAllString(content, "")
 
 	// RTVE specific tag that calls on another article
-	content = strings.ReplaceAll(content, "@@NOTICIA[16657506,IMAGEN,FIRMA]", "")
+	noticiaRegex := regexp.MustCompile(`@@NOTICIA\[[^\]]*\]`)
+	content = noticiaRegex.ReplaceAllString(content, "")
 
+	fotoRegex := regexp.MustCompile(`@@FOTO\[[^\]]*\]`)
+	content = fotoRegex.ReplaceAllString(content, "")
+
+	mediaRegex := regexp.MustCompile(`@@MEDIA\[[^\]]*\]`)
+	content = mediaRegex.ReplaceAllString(content, "")
+	
 	replacements := map[string]string{
 		"&nbsp;":   " ",
 		"&lt;":     "<",
@@ -104,7 +111,6 @@ func CleanHTMLEntities(content string) string {
 		"&Ntilde;": "Ñ",
 		"&uuml;":   "ü",
 		"&Uuml;":   "Ü",
-		"\n":        " ",
 	}
 
 	for entity, char := range replacements {
