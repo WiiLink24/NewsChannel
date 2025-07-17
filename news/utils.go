@@ -77,6 +77,13 @@ func ConvertImage(data []byte) []byte {
 func CleanHTMLEntities(content string) string {
 	content = html.UnescapeString(content)
 
+	iframeRegex := regexp.MustCompile(`(?s)<iframe.*?>.*?</iframe>`)
+	content = iframeRegex.ReplaceAllString(content, "")
+
+	scriptRegex := regexp.MustCompile(`(?s)<script.*?>.*?</script>`)
+	content = scriptRegex.ReplaceAllString(content, "")
+
+	// Remove all HTML tags
 	htmlTagRegex := regexp.MustCompile(`<[^>]*>`)
 	content = htmlTagRegex.ReplaceAllString(content, "")
 
