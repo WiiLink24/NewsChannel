@@ -146,7 +146,7 @@ func (f *nos) extractLocationFromContent(html string) *news.Location {
 				keyword = strings.TrimSpace(keyword)
 				if keyword != "" {
 					// Try to find location match
-					if loc := news.GetLocationForExtractedLocation(keyword); loc != nil {
+					if loc := news.GetLocationForExtractedLocation(keyword, "nl"); loc != nil {
 						foundLocation = loc
 						return false
 					}

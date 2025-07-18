@@ -166,7 +166,7 @@ func (r *RTVE) extractLocation(text, category string, otherTopics []string) *new
 			part := strings.TrimSpace(parts[i])
 			if part != "" && part != "Noticias" && part != "Mundo" {
 				if part != "Especiales" && part != "Nacional" && part != "Internacional" && part != "Tags Libres" {
-					if location := news.GetLocationForExtractedLocation(part); location != nil {
+					if location := news.GetLocationForExtractedLocation(part, "es"); location != nil {
 						return location
 					}
 				}

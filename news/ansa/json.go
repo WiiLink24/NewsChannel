@@ -164,7 +164,7 @@ func (a *ANSA) extractLocationFromTags(html string) *news.Location {
 
 	// Try each candidate tag as a location (first match wins)
 	for tag := range seen {
-		if loc := news.GetLocationForExtractedLocation(tag); loc != nil {
+		if loc := news.GetLocationForExtractedLocation(tag, "it"); loc != nil {
 			return loc
 		}
 	}

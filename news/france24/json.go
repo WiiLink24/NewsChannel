@@ -199,7 +199,7 @@ func (a *france24) extractLocationFromContent(html string) *news.Location {
 
 	// Try each candidate location
 	for candidate := range locationCandidates {
-		if loc := news.GetLocationForExtractedLocation(candidate); loc != nil {
+		if loc := news.GetLocationForExtractedLocation(candidate, "fr"); loc != nil {
 			return loc
 		}
 	}

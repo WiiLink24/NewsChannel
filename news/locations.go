@@ -37,10 +37,10 @@ type NominatimResponse struct {
 }
 
 // GetLocationFromAPI fetches location data from OpenStreetMap Nominatim API
-func GetLocationFromAPI(locationName string) (*Location, error) {
+func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 	encodedLocation := url.QueryEscape(locationName)
 
-	apiURL := fmt.Sprintf("https://nominatim.openstreetmap.org/search?q=%s&format=json&limit=1", encodedLocation)
+	apiURL := fmt.Sprintf("https://nominatim.openstreetmap.org/search?q=%s&format=json&limit=1&accept-language=%s", encodedLocation, lang)
 
 	client := &http.Client{
 		Timeout: 10 * time.Second,
@@ -94,29 +94,8 @@ func GetLocationFromAPI(locationName string) (*Location, error) {
 	return location, nil
 }
 
-// GetLocationName gets a location's English name and coordinates
-// First checks CommonLocations, then falls back to OpenStreetMap API
-func GetLocationName(locationPart string) string {
-	// Convert the location part to uppercase to match the keys in CommonLocations
-	locationKey := strings.ToUpper(locationPart)
-
-	// Check if the location exists in CommonLocations
-	if loc, exists := CommonLocations[locationKey]; exists {
-		return loc.Name
-	}
-
-	// If not found, try with the API
-	location, err := GetLocationFromAPI(locationPart)
-	if err != nil {
-		log.Printf("Failed to get location from API for '%s': %v", locationPart, err)
-		return locationPart
-	}
-
-	return location.Name
-}
-
 // Gets a complete Location object with coordinates
-func GetLocationForExtractedLocation(locationPart string) *Location {
+func GetLocationForExtractedLocation(locationPart string, lang string) *Location {
 	// Convert the location part to uppercase to match the keys in CommonLocations
 	locationKey := strings.ToUpper(locationPart)
 
@@ -131,7 +110,7 @@ func GetLocationForExtractedLocation(locationPart string) *Location {
 	}
 
 	// If not found, try with the API
-	location, err := GetLocationFromAPI(locationPart)
+	location, err := GetLocationFromAPI(locationPart, lang)
 	if err != nil {
 		log.Printf("Failed to get location from API for '%s': %v", locationPart, err)
 		return nil

@@ -96,7 +96,7 @@ func (f *welt) getArticles(url string, topic news.Topic) ([]news.Article, error)
 			for _, keyword := range keywords {
 				keyword = strings.TrimSpace(keyword)
 				if keyword != "" {
-					location = news.GetLocationForExtractedLocation(keyword)
+					location = news.GetLocationForExtractedLocation(keyword, "de")
 					if location != nil {
 						break
 					}

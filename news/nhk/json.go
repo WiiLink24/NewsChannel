@@ -192,7 +192,7 @@ func (f *nhk) extractLocationFromContent(html string) *news.Location {
             for _, keyword := range keywords {
                 keyword = strings.TrimSpace(keyword)
                 if keyword != "" {
-                    if loc := news.GetLocationForExtractedLocation(keyword); loc != nil {
+                    if loc := news.GetLocationForExtractedLocation(keyword, "ja"); loc != nil {
                         foundLocation = loc
                         return false
                     }
