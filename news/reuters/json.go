@@ -42,6 +42,11 @@ func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, err
 				continue
 			}
 
+			// Ignore podcasts
+			if story.(map[string]any)["section_url"].(string) == "/podcasts/" {
+				continue
+			}
+
 			// The article is nested inside a "templates" list, with the data we require in the 1st index.
 			// I (Noah) refer to this as bad because it returns the web page, rather than the mobile API page.
 			// The mobile API is much easier to parse.
