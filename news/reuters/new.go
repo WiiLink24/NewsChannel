@@ -14,6 +14,7 @@ const (
 	Germany       = "germany"
 	France        = "france"
 	UnitedKingdom = "uk"
+	Australia     = "australia"
 )
 
 type Reuters struct {
@@ -34,6 +35,8 @@ func NewReuters(oldArticleTitles []string, countryCode uint8) *Reuters {
 
 func getCountry(code uint8) Country {
 	switch code {
+	case 65:
+		return Australia
 	case 78:
 		return Germany
 	case 77:
