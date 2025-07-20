@@ -15,6 +15,7 @@ const (
 	France        = "france"
 	UnitedKingdom = "uk"
 	Australia     = "australia"
+	Poland        = "poland"
 )
 
 type Reuters struct {
@@ -41,6 +42,8 @@ func getCountry(code uint8) Country {
 		return Germany
 	case 77:
 		return France
+	case 97:
+		return Poland
 	case 18:
 		return Canada
 	case 110:

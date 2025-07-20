@@ -36,6 +36,13 @@
       "source": "reuters"
     },
     {
+      "countryCode": 97,
+      "languageCode": 1,
+      "name": "Poland",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
       "countryCode": 105,
       "languageCode": 4,
       "name": "Spain",
