@@ -43,7 +43,7 @@ func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, err
 			}
 
 			// Ignore podcasts
-			if story.(map[string]any)["section_url"].(string) == "/podcasts/" {
+			if story.(map[string]any)["section_url"] == "/podcasts/" {
 				continue
 			}
 
