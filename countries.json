@@ -1,9 +1,30 @@
 {
   "countries": [
     {
+      "countryCode": 16,
+      "languageCode": 1,
+      "name": "Brazil",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
       "countryCode": 18,
       "languageCode": 1,
       "name": "Canada",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 36,
+      "languageCode": 1,
+      "name": "Mexico",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 42,
+      "languageCode": 1,
+      "name": "Peru",
       "language": "English",
       "source": "reuters"
     },
@@ -15,9 +36,9 @@
       "source": "reuters"
     },
     {
-      "countryCode": 110,
+      "countryCode": 50,
       "languageCode": 1,
-      "name": "United Kingdom",
+      "name": "Uruguay",
       "language": "English",
       "source": "reuters"
     },
@@ -29,6 +50,13 @@
       "source": "reuters"
     },
     {
+      "countryCode": 77,
+      "languageCode": 1,
+      "name": "France",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
       "countryCode": 78,
       "languageCode": 1,
       "name": "Germany",
@@ -36,9 +64,100 @@
       "source": "reuters"
     },
     {
+      "countryCode": 87,
+      "languageCode": 1,
+      "name": "Lithuania",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 92,
+      "languageCode": 1,
+      "name": "Mozambique",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
       "countryCode": 97,
       "languageCode": 1,
       "name": "Poland",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 100,
+      "languageCode": 1,
+      "name": "Russia",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 104,
+      "languageCode": 1,
+      "name": "South Africa",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 110,
+      "languageCode": 1,
+      "name": "United Kingdom",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 113,
+      "languageCode": 1,
+      "name": "Azerbaijan",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 118,
+      "languageCode": 1,
+      "name": "Sudan",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 128,
+      "languageCode": 1,
+      "name": "Taiwan",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 136,
+      "languageCode": 1,
+      "name": "South Korea",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 153,
+      "languageCode": 1,
+      "name": "Singapore",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 160,
+      "languageCode": 1,
+      "name": "China",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 169,
+      "languageCode": 1,
+      "name": "India",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
+      "countryCode": 175,
+      "languageCode": 1,
+      "name": "Syria",
       "language": "English",
       "source": "reuters"
     },
