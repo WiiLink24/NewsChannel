@@ -195,13 +195,6 @@
       "name": "Japan",
       "language": "Japanese",
       "source": "nhk"
-    },
-    {
-      "countryCode": 78,
-      "languageCode": 2,
-      "name": "Germany",
-      "language": "German",
-      "source": "welt"
     }
   ]
 }

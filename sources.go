@@ -7,7 +7,6 @@ import (
 	"NewsChannel/news/nos"
 	"NewsChannel/news/reuters"
 	"NewsChannel/news/rtve"
-	"NewsChannel/news/welt"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -44,9 +43,6 @@ func (n *News) setSource(sourceName string) {
 	case "nhk":
 		nhkSource := nhk.NewNHK(n.oldArticleTitles)
 		n.source = nhkSource
-	case "welt":
-		weltSource := welt.NewWelt(n.oldArticleTitles)
-		n.source = weltSource
 	default:
 		n.source = reuters.NewReuters(n.oldArticleTitles, n.currentCountryCode)
 	}
@@ -105,12 +101,12 @@ func (n *News) debugSaveArticles() {
 
 	// Structure
 	type DebugArticle struct {
-		Title     string `json:"title"`
-		Content   string `json:"content"`
-		Topic     string `json:"topic"`
-		Location  string `json:"location"`
-		HasImage  bool   `json:"hasImage"`
-		ImageSize int    `json:"imageSize"`
+		Title        string `json:"title"`
+		Content      string `json:"content"`
+		Topic        string `json:"topic"`
+		Location     string `json:"location"`
+		HasImage     bool   `json:"hasImage"`
+		ImageSize    int    `json:"imageSize"`
 		ImageCaption string `json:"imageCaption"`
 	}
 
@@ -147,12 +143,12 @@ func (n *News) debugSaveArticles() {
 		}
 
 		debugArticles = append(debugArticles, DebugArticle{
-			Title:     article.Title,
-			Content:   content,
-			Topic:     topicName,
-			Location:  location,
-			HasImage:  hasImage,
-			ImageSize: imageSize,
+			Title:        article.Title,
+			Content:      content,
+			Topic:        topicName,
+			Location:     location,
+			HasImage:     hasImage,
+			ImageSize:    imageSize,
 			ImageCaption: article.Thumbnail.Caption,
 		})
 	}
