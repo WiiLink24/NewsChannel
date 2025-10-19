@@ -9,6 +9,7 @@ import (
 type Country string
 
 const (
+	Japan         = "japan"
 	Brazil        = "brazil"
 	Canada        = "canada"
 	Mexico        = "mexico"
@@ -52,6 +53,8 @@ func NewReuters(oldArticleTitles []string, countryCode uint8) *Reuters {
 
 func getCountry(code uint8) Country {
 	switch code {
+	case 1:
+		return Japan
 	case 16:
 		return Brazil
 	case 18:

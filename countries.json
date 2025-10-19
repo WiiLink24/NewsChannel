@@ -162,6 +162,13 @@
       "source": "reuters"
     },
     {
+      "countryCode": 78,
+      "languageCode": 2,
+      "name": "Germany",
+      "language": "English",
+      "source": "reuters"
+    },
+    {
       "countryCode": 105,
       "languageCode": 4,
       "name": "Spain",
@@ -169,18 +176,18 @@
       "source": "rtve"
     },
     {
-      "countryCode": 83,
+      "countryCode": 110,
       "languageCode": 5,
       "name": "Italy",
-      "language": "Italian",
-      "source": "ansa"
+      "language": "English",
+      "source": "reuters"
     },
     {
       "countryCode": 77,
       "languageCode": 3,
       "name": "France",
-      "language": "French",
-      "source": "france24"
+      "language": "English",
+      "source": "reuters"
     },
     {
       "countryCode": 94,
@@ -193,8 +200,8 @@
       "countryCode": 1,
       "languageCode": 0,
       "name": "Japan",
-      "language": "Japanese",
-      "source": "nhk"
+      "language": "English",
+      "source": "reuters"
     }
   ]
 }
