@@ -37,6 +37,12 @@ func (a *ANSA) GetArticles() ([]news.Article, error) {
 	}
 	articles = append(articles, temp...)
 
+	temp, err = a.GetScienceArticles()
+	if err != nil {
+		return nil, err
+	}
+	articles = append(articles, temp...)
+
 	temp, err = a.GetTechnologyArticles()
 	if err != nil {
 		return nil, err
@@ -67,8 +73,7 @@ func (a *ANSA) GetBusinessArticles() ([]news.Article, error) {
 }
 
 func (a *ANSA) GetScienceArticles() ([]news.Article, error) {
-	// ANSA doesn't have a separate science feed, use technology
-	return a.getArticles("https://www.ansa.it/canale_tecnologia/notizie/tecnologia_rss.xml", news.Science)
+	return a.getArticles("https://www.ansa.it/canale_scienza_tecnica/notizie/scienzaetecnica_rss.xml", news.Science)
 }
 
 func (a *ANSA) GetTechnologyArticles() ([]news.Article, error) {

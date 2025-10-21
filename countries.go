@@ -2,16 +2,17 @@ package main
 
 func (n *News) GetTopicsForLanguage() []string {
 	switch n.currentLanguageCode {
-	case 0:
-		return []string{"社会", "国際", "スポーツ", "芸能文化", "経済", "科学", "テクノロジー"}
-	case 2:
-		return []string{"Deutschland", "Weltnachrichten", "Sport", "Unterhaltung", "Wirtschaft", "Gesundheit/Medizin", "Technik"}
+	// TODO: figure out why these category names break the channel
+	// case 0:
+	// 	return []string{"社会", "国際", "スポーツ", "芸能文化", "経済", "科学", "テクノロジー"}
+	// case 2:
+	// 	return []string{"Deutschland", "Weltnachrichten", "Sport", "Unterhaltung", "Wirtschaft", "Gesundheit/Medizin", "Technik"}
 	case 3:
-		return []string{"France", "Monde", "Sports", "Culture", "Economie", "Sciences & santé", "Technologies"}
+		return []string{"France", "Monde", "Sports", "Culture", "Economie", "Sciences et santé", "Technologies"}
 	case 4:
 		return []string{"España", "Internacional", "Deportes", "Cultura", "Economia", "Ciencia y salud", "Tecnologia"}
 	case 5:
-		return []string{"Notizie nazionali", "Notizie internazionali", "Sport", "Arte e Intrattenimento", "Attività commerciale", "Scienze e salute", "Tecnologia"}
+		return []string{"Dall'Italia", "Dal mondo", "Sport", "Cultura", "Economia", "Scienza", "Tecnologia"}
 	case 6:
 		return []string{"Continentaal nieuws", "Internationaal nieuws", "Sport", "Kunst en entertainment", "Zakelljk nieuws", "Wetenschap en gezondheid", "Technologie"}
 	default:
