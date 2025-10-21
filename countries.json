@@ -179,15 +179,15 @@
       "countryCode": 110,
       "languageCode": 5,
       "name": "Italy",
-      "language": "English",
-      "source": "reuters"
+      "language": "Italian",
+      "source": "ansa"
     },
     {
       "countryCode": 77,
       "languageCode": 3,
       "name": "France",
-      "language": "English",
-      "source": "reuters"
+      "language": "French",
+      "source": "france24"
     },
     {
       "countryCode": 94,
@@ -200,8 +200,8 @@
       "countryCode": 1,
       "languageCode": 0,
       "name": "Japan",
-      "language": "English",
-      "source": "reuters"
+      "language": "Japanese",
+      "source": "nhk"
     }
   ]
 }
