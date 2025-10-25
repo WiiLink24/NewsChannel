@@ -51,8 +51,9 @@ func (a *ANSA) getArticles(url string, topic news.Topic) ([]news.Article, error)
 			break
 		}
 
+		title := strings.TrimSpace(item.Title)
 		// Check for duplicates
-		if news.IsDuplicateArticle(a.oldArticleTitles, item.Title) {
+		if news.IsDuplicateArticle(a.oldArticleTitles, title) {
 			continue
 		}
 
@@ -73,7 +74,7 @@ func (a *ANSA) getArticles(url string, topic news.Topic) ([]news.Article, error)
 		}
 
 		article := news.Article{
-			Title:     strings.TrimSpace(item.Title),
+			Title:     title,
 			Content:   &content,
 			Topic:     topic,
 			Location:  location,

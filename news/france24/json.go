@@ -64,8 +64,9 @@ func (a *france24) getArticles(url string, topic news.Topic) ([]news.Article, er
 			break
 		}
 
+		title := strings.TrimSpace(item.Title)
 		// Check for duplicates
-		if news.IsDuplicateArticle(a.oldArticleTitles, item.Title) {
+		if news.IsDuplicateArticle(a.oldArticleTitles, title) {
 			continue
 		}
 
@@ -97,7 +98,7 @@ func (a *france24) getArticles(url string, topic news.Topic) ([]news.Article, er
 		}
 
 		article := news.Article{
-			Title:     strings.TrimSpace(item.Title),
+			Title:     title,
 			Content:   &content,
 			Topic:     topic,
 			Location:  location,
@@ -241,19 +242,19 @@ func (a *france24) extractThumbnail(html string) *news.Thumbnail {
 	}
 
 	caption := ""
-    doc.Find("figure.m-item-image figcaption.a-figcaption").Each(func(i int, s *goquery.Selection) {
-        var captionParts []string
-        s.Find("span").Each(func(j int, span *goquery.Selection) {
-            text := strings.TrimSpace(span.Text())
-            if text != "" {
-                captionParts = append(captionParts, text)
-            }
-        })
-        if len(captionParts) > 0 {
-            caption = strings.Join(captionParts, " ")
-            return
-        }
-    })
+	doc.Find("figure.m-item-image figcaption.a-figcaption").Each(func(i int, s *goquery.Selection) {
+		var captionParts []string
+		s.Find("span").Each(func(j int, span *goquery.Selection) {
+			text := strings.TrimSpace(span.Text())
+			if text != "" {
+				captionParts = append(captionParts, text)
+			}
+		})
+		if len(captionParts) > 0 {
+			caption = strings.Join(captionParts, " ")
+			return
+		}
+	})
 
 	return &news.Thumbnail{
 		Image:   news.ConvertImage(imageData),
