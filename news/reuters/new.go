@@ -19,7 +19,6 @@ const (
 	Australia     = "australia"
 	France        = "france"
 	Germany       = "germany"
-	Lithuania     = "lithuania"
 	Mozambique    = "mozambique"
 	Poland        = "poland"
 	Russia        = "russia"
@@ -71,8 +70,6 @@ func getCountry(code uint8) Country {
 		return France
 	case 78:
 		return Germany
-	case 87:
-		return Lithuania
 	case 92:
 		return Mozambique
 	case 97:
