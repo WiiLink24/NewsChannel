@@ -172,10 +172,7 @@ func (r *RTVE) extractLocation(text, category string, otherTopics []string) *new
 			}
 		}
 
-		if location := news.GetLocationForExtractedLocation(candidates, "es"); location != nil {
-			return location
-		}
-		return nil
+		return news.GetLocationForExtractedLocation(candidates, "es")
 	}
 
 	// Try to extract location from the main category

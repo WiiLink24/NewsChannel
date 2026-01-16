@@ -204,11 +204,7 @@ func (a *france24) extractLocationFromContent(html string) *news.Location {
 		candidates = append(candidates, candidate)
 	}
 
-	if loc := news.GetLocationForExtractedLocation(candidates, "fr"); loc != nil {
-		return loc
-	}
-
-	return nil
+	return news.GetLocationForExtractedLocation(candidates, "fr")
 }
 
 func (a *france24) extractThumbnail(html string) *news.Thumbnail {

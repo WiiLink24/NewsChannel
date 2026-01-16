@@ -200,11 +200,7 @@ func (f *nhk) extractLocationFromContent(html string) *news.Location {
 		return true
 	})
 
-	if loc := news.GetLocationForExtractedLocation(candidates, "ja"); loc != nil {
-		return loc
-	}
-
-	return nil
+	return news.GetLocationForExtractedLocation(candidates, "ja")
 }
 
 func (f *nhk) extractThumbnail(html string) *news.Thumbnail {

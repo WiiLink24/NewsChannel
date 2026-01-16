@@ -153,11 +153,7 @@ func (f *nos) extractLocationFromContent(html string) *news.Location {
 		return true
 	})
 
-	if loc := news.GetLocationForExtractedLocation(candidates, "nl"); loc != nil {
-		return loc
-	}
-
-	return nil
+	return news.GetLocationForExtractedLocation(candidates, "nl")
 }
 
 func (f *nos) extractImageCaption(articleURL string) string {
