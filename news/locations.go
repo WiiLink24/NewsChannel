@@ -38,6 +38,8 @@ type NominatimResponse struct {
 	BoundingBox []string `json:"boundingbox"`
 }
 
+var locationCache = make(map[string]Location)
+
 // GetLocationFromAPI fetches location data from OpenStreetMap Nominatim API
 func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 	encodedLocation := url.QueryEscape(locationName)
@@ -96,6 +98,8 @@ func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 		Importance: result.Importance,
 	}
 
+	locationCache[locationName] = *location
+
 	return location, nil
 }
 
@@ -114,6 +118,11 @@ func GetLocationForExtractedLocation(locations []string, lang string) *Location 
 
 		// Check if the location exists in CommonLocations
 		if loc, exists := CommonLocations[locationKey]; exists {
+			return &loc
+		}
+
+		// Check if the location has already been cached
+		if loc, exists := locationCache[locationKey]; exists {
 			return &loc
 		}
 
