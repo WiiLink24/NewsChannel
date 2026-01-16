@@ -193,7 +193,7 @@ func getLocation(root []map[string]any) (*news.Location, error) {
 		locationName := strings.TrimSpace(splitLocation[0])
 
 		// Use the new dynamic location function that includes OSM API fallback
-		return news.GetLocationForExtractedLocation(locationName, "en"), nil
+		return news.GetLocationForExtractedLocation([]string{locationName}, "en"), nil
 	}
 
 	return nil, nil

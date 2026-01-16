@@ -162,15 +162,18 @@ func (r *RTVE) extractLocation(text, category string, otherTopics []string) *new
 		parts := strings.Split(path, "/")
 
 		// Match the last part of the path recursively
+		var candidates []string
 		for i := len(parts) - 1; i >= 0; i-- {
 			part := strings.TrimSpace(parts[i])
 			if part != "" && part != "Noticias" && part != "Mundo" {
 				if part != "Especiales" && part != "Nacional" && part != "Internacional" && part != "Tags Libres" {
-					if location := news.GetLocationForExtractedLocation(part, "es"); location != nil {
-						return location
-					}
+					candidates = append(candidates, part)
 				}
 			}
+		}
+
+		if location := news.GetLocationForExtractedLocation(candidates, "es"); location != nil {
+			return location
 		}
 		return nil
 	}

@@ -7,15 +7,17 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
 
 type Location struct {
-	Longitude float64
-	Latitude  float64
-	Name      string
+	Longitude  float64
+	Latitude   float64
+	Name       string
+	Importance float64
 }
 
 // NominatimResponse represents the structure of OpenStreetMap Nominatim API response
@@ -50,6 +52,8 @@ func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
+
+	req.Header.Set("User-Agent", "WiiLink News Channel File Generator")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -86,37 +90,54 @@ func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 	}
 
 	location := &Location{
-		Longitude: lon,
-		Latitude:  lat,
-		Name:      result.Name,
+		Longitude:  lon,
+		Latitude:   lat,
+		Name:       result.Name,
+		Importance: result.Importance,
 	}
 
 	return location, nil
 }
 
 // Gets a complete Location object with coordinates
-func GetLocationForExtractedLocation(locationPart string, lang string) *Location {
-	// Convert the location part to uppercase to match the keys in CommonLocations
-	locationKey := strings.ToUpper(locationPart)
+func GetLocationForExtractedLocation(locations []string, lang string) *Location {
+	var foundLocations []Location
 
-	// Check if the location is in the blocklist (not a real place)
-	if BlockedLocations[locationKey] {
+	for _, locationPart := range locations {
+		// Convert the location part to uppercase to match the keys in CommonLocations
+		locationKey := strings.ToUpper(locationPart)
+
+		// Check if the location is in the blocklist (not a real place)
+		if BlockedLocations[locationKey] {
+			continue
+		}
+
+		// Check if the location exists in CommonLocations
+		if loc, exists := CommonLocations[locationKey]; exists {
+			return &loc
+		}
+
+		// If not found, try with the API
+		// First, wait 1s to ensure we stick to the usage policy
+		time.Sleep(1 * time.Second)
+
+		location, err := GetLocationFromAPI(locationPart, lang)
+		if err != nil {
+			log.Printf("Failed to get location from API for '%s': %v", locationPart, err)
+			continue
+		}
+		foundLocations = append(foundLocations, *location)
+	}
+
+	if len(foundLocations) == 0 {
 		return nil
 	}
 
-	// Check if the location exists in CommonLocations
-	if loc, exists := CommonLocations[locationKey]; exists {
-		return &loc
-	}
+	sort.Slice(foundLocations, func(i, j int) bool {
+		return foundLocations[i].Importance > foundLocations[j].Importance
+	})
 
-	// If not found, try with the API
-	location, err := GetLocationFromAPI(locationPart, lang)
-	if err != nil {
-		log.Printf("Failed to get location from API for '%s': %v", locationPart, err)
-		return nil
-	}
-
-	return location
+	return &foundLocations[0]
 }
 
 var BlockedLocations = map[string]bool{

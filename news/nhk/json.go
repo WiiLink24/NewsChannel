@@ -186,24 +186,25 @@ func (f *nhk) extractLocationFromContent(html string) *news.Location {
 		return nil
 	}
 
-	var foundLocation *news.Location
+	var candidates []string
 	doc.Find(`meta[name="keywords"]`).EachWithBreak(func(i int, s *goquery.Selection) bool {
 		if content, exists := s.Attr("content"); exists {
 			keywords := strings.Split(content, ",")
 			for _, keyword := range keywords {
 				keyword = strings.TrimSpace(keyword)
 				if keyword != "" {
-					if loc := news.GetLocationForExtractedLocation(keyword, "ja"); loc != nil {
-						foundLocation = loc
-						return false
-					}
+					candidates = append(candidates, keyword)
 				}
 			}
 		}
 		return true
 	})
 
-	return foundLocation
+	if loc := news.GetLocationForExtractedLocation(candidates, "ja"); loc != nil {
+		return loc
+	}
+
+	return nil
 }
 
 func (f *nhk) extractThumbnail(html string) *news.Thumbnail {
