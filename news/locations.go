@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -14,10 +15,10 @@ import (
 )
 
 type Location struct {
-	Longitude  float64
-	Latitude   float64
-	Name       string
-	Importance float64
+	Longitude float64
+	Latitude  float64
+	Name      string
+	PlaceRank int
 }
 
 // NominatimResponse represents the structure of OpenStreetMap Nominatim API response
@@ -81,6 +82,10 @@ func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 	// Use the first (most relevant) result
 	result := results[0]
 
+	if !slices.Contains(AllowedTypes, result.AddressType) {
+		return nil, fmt.Errorf("disallowed location type: %s", result.AddressType)
+	}
+
 	lat, err := strconv.ParseFloat(result.Lat, 64)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse latitude: %w", err)
@@ -92,10 +97,10 @@ func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 	}
 
 	location := &Location{
-		Longitude:  lon,
-		Latitude:   lat,
-		Name:       result.Name,
-		Importance: result.Importance,
+		Longitude: lon,
+		Latitude:  lat,
+		Name:      result.Name,
+		PlaceRank: result.PlaceRank,
 	}
 
 	locationCache[locationName] = *location
@@ -143,7 +148,7 @@ func GetLocationForExtractedLocation(locations []string, lang string) *Location 
 	}
 
 	sort.Slice(foundLocations, func(i, j int) bool {
-		return foundLocations[i].Importance > foundLocations[j].Importance
+		return foundLocations[i].PlaceRank > foundLocations[j].PlaceRank
 	})
 
 	return &foundLocations[0]
@@ -769,4 +774,15 @@ var CommonLocations = map[string]Location{
 		Latitude:  55.378051,
 		Name:      "United Kingdom",
 	},
+}
+
+var AllowedTypes = []string{
+	"city",
+	"county",
+	"protected_area",
+	"town",
+	"country",
+	"state",
+	"park",
+	"province",
 }
