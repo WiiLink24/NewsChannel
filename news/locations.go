@@ -40,6 +40,7 @@ type NominatimResponse struct {
 }
 
 var locationCache = make(map[string]Location)
+var noSearchCache = make(map[string]bool)
 
 // GetLocationFromAPI fetches location data from OpenStreetMap Nominatim API
 func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
@@ -117,19 +118,21 @@ func GetLocationForExtractedLocation(locations []string, lang string) *Location 
 		locationKey := strings.ToUpper(locationPart)
 
 		// Check if the location is in the blocklist (not a real place)
-		if BlockedLocations[locationKey] {
+		if BlockedLocations[locationKey] || noSearchCache[locationKey] {
 			continue
 		}
 
 		// Check if the location exists in CommonLocations
 		if loc, exists := CommonLocations[locationKey]; exists {
-			return &loc
+			foundLocations = append(foundLocations, loc)
+			continue
 		}
 
 		// Check if the location has already been cached
 		if loc, exists := locationCache[locationKey]; exists {
 			log.Printf("Using cached location for %s", locationKey)
-			return &loc
+			foundLocations = append(foundLocations, loc)
+			continue
 		}
 
 		// If not found, try with the API
@@ -139,6 +142,7 @@ func GetLocationForExtractedLocation(locations []string, lang string) *Location 
 		location, err := GetLocationFromAPI(locationPart, lang)
 		if err != nil {
 			log.Printf("Failed to get location from API for '%s': %v", locationPart, err)
+			noSearchCache[locationKey] = true
 			continue
 		}
 		foundLocations = append(foundLocations, *location)
