@@ -122,6 +122,7 @@ func SanitizeText(content string) string {
 		"&Uuml;":   "Ü",
 		"​":        "",
 		"‑":        "-",
+		"\t":       "",
 	}
 
 	for entity, char := range replacements {

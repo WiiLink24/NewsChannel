@@ -121,9 +121,15 @@ func (a *ANSA) extractArticleBody(html string) string {
 		section.Find(`div.rich-text, #piano-container`).Remove()
 
 		section.Find("p, div, span, h1, h2, h3, h4, h5, h6").Each(func(j int, elem *goquery.Selection) {
-			text := strings.TrimSpace(elem.Text())
-			if text != "" {
-				builder.WriteString(text + "\n\n")
+			// Split on tabs (ANSA add a tab at the start of each paragraph)
+			paragraphSplit := strings.Split(elem.Text(), "\t")
+
+			for _, paragraph := range paragraphSplit {
+				text := strings.TrimSpace(paragraph)
+				text = strings.ReplaceAll(text, "\n", " ")
+				if text != "" {
+					builder.WriteString(text + "\n\n")
+				}
 			}
 		})
 	})
