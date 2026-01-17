@@ -66,7 +66,7 @@ func (a *ANSA) getArticles(url string, topic news.Topic) ([]news.Article, error)
 		}
 
 		// Clean HTML tags from content
-		content = news.CleanHTMLEntities(content)
+		content = news.SanitizeText(content)
 
 		// Skip if no content
 		if len(strings.TrimSpace(content)) == 0 {

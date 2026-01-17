@@ -5,11 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"regexp"
 	"strings"
 )
-
-var htmlRegex = regexp.MustCompile("<.*?>")
 
 func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	data, err := news.HttpGet(url, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
@@ -119,9 +116,10 @@ func parseArticle(root []map[string]any) (*string, error) {
 				continue
 			}
 
-			// Remove any <a> strings.
+			// Sanitize paragraph
 			unSanitized := content.(map[string]any)["content"].(string)
-			sanitized := htmlRegex.ReplaceAllString(unSanitized, "")
+			sanitized := news.SanitizeText(unSanitized)
+
 			ret += sanitized
 			ret += "\n\n"
 		}

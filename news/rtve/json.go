@@ -68,7 +68,7 @@ func (r *RTVE) getArticles(url string, topic news.Topic) ([]news.Article, error)
 			title = rtveArticle.LongTitle
 		}
 
-		title = news.CleanHTMLEntities(title)
+		title = news.SanitizeText(title)
 
 		// Check for duplicates
 		if news.IsDuplicateArticle(r.oldArticleTitles, title) {
@@ -85,7 +85,7 @@ func (r *RTVE) getArticles(url string, topic news.Topic) ([]news.Article, error)
 		// Cahnge "</p><p>" to "\n\n" for better readability
 		content = strings.ReplaceAll(content, "</p><p>", "\n\n")
 
-		content = news.CleanHTMLEntities(content)
+		content = news.SanitizeText(content)
 
 		// Skip if no content
 		if len(strings.TrimSpace(content)) == 0 {

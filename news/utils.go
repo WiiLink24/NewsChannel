@@ -76,7 +76,7 @@ func ConvertImage(data []byte) []byte {
 	return outputImgWriter.Bytes()
 }
 
-func CleanHTMLEntities(content string) string {
+func SanitizeText(content string) string {
 	content = html.UnescapeString(content)
 
 	iframeRegex := regexp.MustCompile(`(?s)<iframe.*?>.*?</iframe>`)
@@ -120,6 +120,8 @@ func CleanHTMLEntities(content string) string {
 		"&Ntilde;": "Ñ",
 		"&uuml;":   "ü",
 		"&Uuml;":   "Ü",
+		"​":        "",
+		"‑":        "-",
 	}
 
 	for entity, char := range replacements {

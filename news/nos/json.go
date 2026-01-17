@@ -103,17 +103,18 @@ func (f *nos) getArticles(url string, topic news.Topic) ([]news.Article, error) 
 }
 
 func (f *nos) extractContentFromDescription(description string) string {
+	var ret string
+
 	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(description))
+	text := strings.Split(doc.Text(), "\n")
 
-	var builder strings.Builder
-
-	text := strings.TrimSpace(doc.Text())
-	if text != "" {
-		builder.WriteString(text)
+	for _, paragraph := range text {
+		sanitized := news.SanitizeText(paragraph)
+		ret += sanitized
+		ret += "\n\n"
 	}
 
-	content := strings.TrimSpace(builder.String())
-	return content
+	return ret
 }
 
 func (f *nos) getLocationFromArticlePage(articleURL string) *news.Location {
