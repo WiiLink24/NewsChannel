@@ -136,6 +136,11 @@ func getThumbnail(root []map[string]any) (*news.Thumbnail, error) {
 			continue
 		}
 
+		// Don't add Reuters logo as image
+		if child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["subtitle"].(string) == "TOPIC:DEFAULT_TOPIC_THUMBNAIL" {
+			return nil, nil
+		}
+
 		thumbnailURL := child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["resizer_url"].(string)
 
 		// Add the required params
