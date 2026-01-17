@@ -128,6 +128,7 @@ func GetLocationForExtractedLocation(locations []string, lang string) *Location 
 
 		// Check if the location has already been cached
 		if loc, exists := locationCache[locationKey]; exists {
+			log.Printf("Using cached location for %s", locationKey)
 			return &loc
 		}
 
@@ -779,10 +780,7 @@ var CommonLocations = map[string]Location{
 var AllowedTypes = []string{
 	"city",
 	"county",
-	"protected_area",
-	"town",
-	"country",
-	"state",
-	"park",
 	"province",
+	"state",
+	"country",
 }
