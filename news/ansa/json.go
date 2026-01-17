@@ -163,14 +163,13 @@ func (a *ANSA) extractLocationFromTags(html string) *news.Location {
 		}
 	}
 
-	// Try each candidate tag as a location (first match wins)
+	// Try each candidate tag as a location
+	var tags []string
 	for tag := range seen {
-		if loc := news.GetLocationForExtractedLocation(tag, "it"); loc != nil {
-			return loc
-		}
+		tags = append(tags, tag)
 	}
 
-	return nil
+	return news.GetLocationForExtractedLocation(tags, "it")
 }
 
 func (a *ANSA) extractThumbnail(html string) *news.Thumbnail {

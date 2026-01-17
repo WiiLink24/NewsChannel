@@ -176,7 +176,7 @@ func (a *france24) extractLocationFromContent(html string) *news.Location {
 
 	locationCandidates := make(map[string]bool)
 
-	// Check meta tags for location
+	// Check meta candidates for location
 	doc.Find(`meta[name="news_keywords"]`).Each(func(i int, s *goquery.Selection) {
 		if content, exists := s.Attr("content"); exists {
 			keywords := strings.Split(content, ",")
@@ -199,13 +199,12 @@ func (a *france24) extractLocationFromContent(html string) *news.Location {
 	})
 
 	// Try each candidate location
+	var candidates []string
 	for candidate := range locationCandidates {
-		if loc := news.GetLocationForExtractedLocation(candidate, "fr"); loc != nil {
-			return loc
-		}
+		candidates = append(candidates, candidate)
 	}
 
-	return nil
+	return news.GetLocationForExtractedLocation(candidates, "fr")
 }
 
 func (a *france24) extractThumbnail(html string) *news.Thumbnail {

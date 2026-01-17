@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +18,7 @@ type Location struct {
 	Longitude float64
 	Latitude  float64
 	Name      string
+	PlaceRank int
 }
 
 // NominatimResponse represents the structure of OpenStreetMap Nominatim API response
@@ -36,6 +39,9 @@ type NominatimResponse struct {
 	BoundingBox []string `json:"boundingbox"`
 }
 
+var locationCache = make(map[string]Location)
+var noSearchCache = make(map[string]bool)
+
 // GetLocationFromAPI fetches location data from OpenStreetMap Nominatim API
 func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 	encodedLocation := url.QueryEscape(locationName)
@@ -50,6 +56,8 @@ func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
+
+	req.Header.Set("User-Agent", "WiiLink News Channel File Generator")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -75,6 +83,10 @@ func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 	// Use the first (most relevant) result
 	result := results[0]
 
+	if !slices.Contains(AllowedTypes, result.AddressType) {
+		return nil, fmt.Errorf("disallowed location type: %s", result.AddressType)
+	}
+
 	lat, err := strconv.ParseFloat(result.Lat, 64)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse latitude: %w", err)
@@ -89,34 +101,62 @@ func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 		Longitude: lon,
 		Latitude:  lat,
 		Name:      result.Name,
+		PlaceRank: result.PlaceRank,
 	}
+
+	locationCache[locationName] = *location
 
 	return location, nil
 }
 
 // Gets a complete Location object with coordinates
-func GetLocationForExtractedLocation(locationPart string, lang string) *Location {
-	// Convert the location part to uppercase to match the keys in CommonLocations
-	locationKey := strings.ToUpper(locationPart)
+func GetLocationForExtractedLocation(locations []string, lang string) *Location {
+	var foundLocations []Location
 
-	// Check if the location is in the blocklist (not a real place)
-	if BlockedLocations[locationKey] {
+	for _, locationPart := range locations {
+		// Convert the location part to uppercase to match the keys in CommonLocations
+		locationKey := strings.ToUpper(locationPart)
+
+		// Check if the location is in the blocklist (not a real place)
+		if BlockedLocations[locationKey] || noSearchCache[locationKey] {
+			continue
+		}
+
+		// Check if the location exists in CommonLocations
+		if loc, exists := CommonLocations[locationKey]; exists {
+			foundLocations = append(foundLocations, loc)
+			continue
+		}
+
+		// Check if the location has already been cached
+		if loc, exists := locationCache[locationKey]; exists {
+			log.Printf("Using cached location for %s", locationKey)
+			foundLocations = append(foundLocations, loc)
+			continue
+		}
+
+		// If not found, try with the API
+		// First, wait 1s to ensure we stick to the usage policy
+		time.Sleep(1 * time.Second)
+
+		location, err := GetLocationFromAPI(locationPart, lang)
+		if err != nil {
+			log.Printf("Failed to get location from API for '%s': %v", locationPart, err)
+			noSearchCache[locationKey] = true
+			continue
+		}
+		foundLocations = append(foundLocations, *location)
+	}
+
+	if len(foundLocations) == 0 {
 		return nil
 	}
 
-	// Check if the location exists in CommonLocations
-	if loc, exists := CommonLocations[locationKey]; exists {
-		return &loc
-	}
+	sort.Slice(foundLocations, func(i, j int) bool {
+		return foundLocations[i].PlaceRank > foundLocations[j].PlaceRank
+	})
 
-	// If not found, try with the API
-	location, err := GetLocationFromAPI(locationPart, lang)
-	if err != nil {
-		log.Printf("Failed to get location from API for '%s': %v", locationPart, err)
-		return nil
-	}
-
-	return location
+	return &foundLocations[0]
 }
 
 var BlockedLocations = map[string]bool{
@@ -739,4 +779,12 @@ var CommonLocations = map[string]Location{
 		Latitude:  55.378051,
 		Name:      "United Kingdom",
 	},
+}
+
+var AllowedTypes = []string{
+	"city",
+	"county",
+	"province",
+	"state",
+	"country",
 }
