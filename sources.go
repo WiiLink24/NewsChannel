@@ -7,6 +7,7 @@ import (
 	"NewsChannel/news/nos"
 	"NewsChannel/news/reuters"
 	"NewsChannel/news/rtve"
+	"NewsChannel/news/tagesschau"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -43,6 +44,9 @@ func (n *News) setSource(sourceName string) {
 	case "nhk":
 		nhkSource := nhk.NewNHK(n.oldArticleTitles)
 		n.source = nhkSource
+	case "tagesschau":
+		tagesschauSource := tagesschau.NewTagesschau(n.oldArticleTitles)
+		n.source = tagesschauSource
 	default:
 		n.source = reuters.NewReuters(n.oldArticleTitles, n.currentCountryCode)
 	}
