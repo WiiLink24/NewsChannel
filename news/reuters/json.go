@@ -135,8 +135,10 @@ func getThumbnail(root []map[string]any) (*news.Thumbnail, error) {
 		}
 
 		// Don't add Reuters logo as image
-		if child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["id"].(any) == "466BJJQ7PVGY5O53NZ3KL65MHM" {
-			return nil, nil
+		if child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["id"] != nil {
+			if child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["id"].(string) == "466BJJQ7PVGY5O53NZ3KL65MHM" {
+				return nil, nil
+			}
 		}
 
 		thumbnailURL := child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["resizer_url"].(string)
