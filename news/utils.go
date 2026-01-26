@@ -49,7 +49,7 @@ func HttpGet(url string, userAgent ...string) ([]byte, error) {
 
 func IsDuplicateArticle(previousArticles []string, currentArticle string) bool {
 	for _, previousArticle := range previousArticles {
-		diff := difflib.NewMatcher([]string{currentArticle}, []string{previousArticle})
+		diff := difflib.NewMatcher(strings.Split(currentArticle, ""), strings.Split(previousArticle, ""))
 		if diff.QuickRatio() >= 0.85 {
 			return true
 		}
