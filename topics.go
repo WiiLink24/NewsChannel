@@ -38,7 +38,7 @@ func (n *News) ReadNewsCache() {
 	n.topics = make([]Topic, topicsLength)
 	n.timestamps = make([][]Timestamp, topicsLength)
 
-	for offset := 0; offset < 24; i++ {
+	for offset := 0; offset < 24; offset++ {
 		i := (n.currentHour - offset + 24) % 24
 
 		var _articles []NewsCache
