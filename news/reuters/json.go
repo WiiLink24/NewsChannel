@@ -3,6 +3,7 @@ package reuters
 import (
 	"NewsChannel/news"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -23,84 +24,111 @@ func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, err
 	// Iterate over the article block
 	var articles []news.Article
 	for _, v := range root {
+		if v["type"].(string) != "story-cluster" {
+			continue
+		}
+
+		stories := v["data"].(map[string]any)["stories"].([]any)
+		for _, story := range stories {
+			article, err := r.createArticle(story.(map[string]any), topic)
+			if err != nil {
+				return nil, err
+			}
+			if article == nil {
+				continue
+			}
+
+			articles = append(articles, *article)
+			return articles, nil
+		}
+	}
+
+	// If we make it here, all clusters are duplicates. Move onto latest articles.
+	for _, v := range root {
 		if v["type"].(string) != "latest-stories" {
 			continue
 		}
 
 		stories := v["data"].(map[string]any)["stories"].([]any)
-		i := 0
 		for _, story := range stories {
-			if i == 1 {
-				break
+			article, err := r.createArticle(story.(map[string]any), topic)
+			if err != nil {
+				return nil, err
 			}
-
-			title := story.(map[string]any)["title"].(string)
-			// Compare previous articles to see if we have a duplicate.
-			if news.IsDuplicateArticle(r.oldArticleTitles, title) {
+			if article == nil {
 				continue
 			}
 
-			// Ignore podcasts
-			if story.(map[string]any)["section_url"] == "/podcasts/" {
-				continue
-			}
-
-			// The article is nested inside a "templates" list, with the data we require in the 1st index.
-			// I (Noah) refer to this as bad because it returns the web page, rather than the mobile API page.
-			// The mobile API is much easier to parse.
-			articlePath := story.(map[string]any)["url"]
-			articleURL := fmt.Sprintf("https://www.reuters.com/mobile/v1%s", articlePath)
-			articleData, err := news.HttpGet(articleURL, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
-			if err != nil {
-				return nil, err
-			}
-
-			// Parse article JSON
-			var articleJSON []map[string]any
-			err = json.Unmarshal(articleData, &articleJSON)
-			if err != nil {
-				if err.Error() == "invalid character '<' looking for beginning of value" {
-					continue
-				}
-
-				return nil, err
-			}
-
-			content, err := parseArticle(articleJSON)
-			if err != nil {
-				return nil, err
-			}
-
-			// Possible there is no text?
-			if len(*content) == 0 {
-				continue
-			}
-
-			location, err := getLocation(articleJSON)
-			if err != nil {
-				return nil, err
-			}
-
-			// Finally get the thumbnail.
-			thumbnail, err := getThumbnail(articleJSON)
-			if err != nil {
-				return nil, err
-			}
-
-			article := news.Article{
-				Title:     title,
-				Content:   content,
-				Topic:     topic,
-				Location:  location,
-				Thumbnail: thumbnail,
-			}
-
-			articles = append(articles, article)
-			i++
+			articles = append(articles, *article)
+			return articles, nil
 		}
 	}
 
 	return articles, nil
+}
+
+func (r *Reuters) createArticle(story map[string]any, topic news.Topic) (*news.Article, error) {
+	title := story["title"].(string)
+	// Compare previous articles to see if we have a duplicate.
+	if news.IsDuplicateArticle(r.oldArticleTitles, title) {
+		return nil, nil
+	}
+
+	// Ignore podcasts
+	if story["section_url"] == "/podcasts/" {
+		return nil, nil
+	}
+
+	// The article is nested inside a "templates" list, with the data we require in the 1st index.
+	// I (Noah) refer to this as bad because it returns the web page, rather than the mobile API page.
+	// The mobile API is much easier to parse.
+	articlePath := story["url"]
+	articleURL := fmt.Sprintf("https://www.reuters.com/mobile/v1%s", articlePath)
+	articleData, err := news.HttpGet(articleURL, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse article JSON
+	var articleJSON []map[string]any
+	err = json.Unmarshal(articleData, &articleJSON)
+	if err != nil {
+		var serr *json.SyntaxError
+		if errors.As(err, &serr) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	content, err := parseArticle(articleJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	// Possible there is no text?
+	if len(*content) == 0 {
+		return nil, nil
+	}
+
+	location, err := getLocation(articleJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	// Finally get the thumbnail.
+	thumbnail, err := getThumbnail(articleJSON)
+	if err != nil {
+		return nil, err
+	}
+
+	return &news.Article{
+		Title:     title,
+		Content:   content,
+		Topic:     topic,
+		Location:  location,
+		Thumbnail: thumbnail,
+	}, nil
 }
 
 func parseArticle(root []map[string]any) (*string, error) {
