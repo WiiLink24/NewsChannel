@@ -284,6 +284,11 @@ var CommonLocations = map[string]Location{
 		Latitude:  52.366333,
 		Name:      "Amsterdam",
 	},
+	"ATHENS": {
+		Longitude: 23.734832,
+		Latitude:  37.975565,
+		Name:      "Athens",
+	},
 	"ATLANTA": {
 		Longitude: -84.385986,
 		Latitude:  33.744507,
