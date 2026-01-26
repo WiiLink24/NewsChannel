@@ -38,7 +38,7 @@ func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, err
 				continue
 			}
 
-			articles = append(articles, article.(news.Article))
+			articles = append(articles, *article)
 			return articles, nil
 		}
 	}
@@ -59,7 +59,7 @@ func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, err
 				continue
 			}
 
-			articles = append(articles, article.(news.Article))
+			articles = append(articles, *article)
 			return articles, nil
 		}
 	}
@@ -67,7 +67,7 @@ func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, err
 	return articles, nil
 }
 
-func (r *Reuters) createArticle(story map[string]any, topic news.Topic) (any, error) {
+func (r *Reuters) createArticle(story map[string]any, topic news.Topic) (*news.Article, error) {
 	title := story["title"].(string)
 	// Compare previous articles to see if we have a duplicate.
 	if news.IsDuplicateArticle(r.oldArticleTitles, title) {
@@ -122,7 +122,7 @@ func (r *Reuters) createArticle(story map[string]any, topic news.Topic) (any, er
 		return nil, err
 	}
 
-	return news.Article{
+	return &news.Article{
 		Title:     title,
 		Content:   content,
 		Topic:     topic,
