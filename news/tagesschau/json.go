@@ -114,6 +114,13 @@ func getThumbnail(root map[string]any) (*news.Thumbnail, error) {
 
 	image := root["teaserImage"].(map[string]any)
 
+	// Ignore Tagesschau logo
+	if image["alttext"] != nil {
+		if image["alttext"].(string) == "Globus auf blauem Hintergrund mit tagesschau-Schriftzug" {
+			return nil, nil
+		}
+	}
+
 	// Get highest res 1x1 ratio image URL
 	thumbnailURL := image["imageVariants"].(map[string]any)["1x1-840"].(string)
 
