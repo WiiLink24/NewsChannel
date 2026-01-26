@@ -38,11 +38,8 @@ func (n *News) ReadNewsCache() {
 	n.topics = make([]Topic, topicsLength)
 	n.timestamps = make([][]Timestamp, topicsLength)
 
-	for i := 0; i < 24; i++ {
-		// Don't process the cache for the current hour.
-		if i == n.currentHour {
-			continue
-		}
+	for offset := 0; offset < 24; i++ {
+		i := (n.currentHour - offset + 24) % 24
 
 		var _articles []NewsCache
 		data, err := os.ReadFile(fmt.Sprintf("./cache/cache_%d_%d_%d.news", i, n.currentCountryCode, n.currentLanguageCode))
