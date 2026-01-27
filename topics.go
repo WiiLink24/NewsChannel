@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"unicode/utf16"
 )
 
@@ -77,7 +78,14 @@ func (n *News) MakeTopicTable() {
 	for i := 1; i < topicsLength; i++ {
 		n.Topics[i].TimestampTableOffset = n.GetCurrentSize()
 		n.Topics[i].NumberOfArticles = uint32(len(n.timestamps[i]))
-		n.Timestamps = append(n.Timestamps, n.timestamps[i]...)
+
+		// Sort timestamps, so latest articles appear first in the channel
+		tempTimestamps := n.timestamps[i]
+		sort.Slice(tempTimestamps, func(i, j int) bool {
+			return tempTimestamps[i].Time > tempTimestamps[j].Time
+		})
+
+		n.Timestamps = append(n.Timestamps, tempTimestamps...)
 	}
 
 	for i, topic := range topics {
