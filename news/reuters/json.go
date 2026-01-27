@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"strings"
 )
 
@@ -169,18 +168,7 @@ func getThumbnail(root []map[string]any) (*news.Thumbnail, error) {
 			}
 		}
 
-		thumbnailURL := child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["resizer_url"].(string)
-
-		// Add the required params
-		parsedURL, err := url.Parse(thumbnailURL)
-		if err != nil {
-			return nil, err
-		}
-		query := parsedURL.Query()
-		query.Add("width", "200")
-		query.Add("height", "200")
-		parsedURL.RawQuery = query.Encode()
-		thumbnailURL = parsedURL.String()
+		thumbnailURL := child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["url"].(string)
 
 		data, err := news.HttpGet(thumbnailURL, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
 		if err != nil {
