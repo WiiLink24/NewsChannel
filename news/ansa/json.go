@@ -51,7 +51,7 @@ func (a *ANSA) getArticles(url string, topic news.Topic) ([]news.Article, error)
 			break
 		}
 
-		title := strings.TrimSpace(item.Title)
+		title := news.SanitizeText(item.Title)
 		// Check for duplicates
 		if news.IsDuplicateArticle(a.oldArticleTitles, title) {
 			continue

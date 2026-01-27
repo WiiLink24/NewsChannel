@@ -23,7 +23,7 @@ func (r *Tagesschau) getArticles(url string, topic news.Topic, storyKey string) 
 	// Iterate over the article block
 	var articles []news.Article
 	for _, story := range stories {
-		title := story.(map[string]any)["title"].(string)
+		title := news.SanitizeText(story.(map[string]any)["title"].(string))
 		// Compare previous articles to see if we have a duplicate.
 		if news.IsDuplicateArticle(r.oldArticleTitles, title) {
 			continue

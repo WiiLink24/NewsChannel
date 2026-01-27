@@ -68,7 +68,7 @@ func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, err
 }
 
 func (r *Reuters) createArticle(story map[string]any, topic news.Topic) (*news.Article, error) {
-	title := story["title"].(string)
+	title := news.SanitizeText(story["title"].(string))
 	// Compare previous articles to see if we have a duplicate.
 	if news.IsDuplicateArticle(r.oldArticleTitles, title) {
 		return nil, nil

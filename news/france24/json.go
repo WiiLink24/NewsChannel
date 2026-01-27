@@ -64,7 +64,7 @@ func (a *france24) getArticles(url string, topic news.Topic) ([]news.Article, er
 			break
 		}
 
-		title := strings.TrimSpace(item.Title)
+		title := news.SanitizeText(item.Title)
 		// Check for duplicates
 		if news.IsDuplicateArticle(a.oldArticleTitles, title) {
 			continue
