@@ -124,7 +124,7 @@ func (n *News) WriteImages() {
 	}
 
 	i := 0
-	for _, article := range n.articles {
+	for j, article := range n.articles {
 		if article.Thumbnail == nil || len(article.Thumbnail.Image) == 0 {
 			continue
 		}
@@ -136,8 +136,8 @@ func (n *News) WriteImages() {
 		}
 
 		// Fix up the article
-		n.Articles[i].PictureIndex = uint32(i)
-		n.Articles[i].PictureTimestamp = fixTime(currentTime)
+		n.Articles[j].PictureIndex = uint32(i)
+		n.Articles[j].PictureTimestamp = fixTime(currentTime)
 		i++
 	}
 
