@@ -143,6 +143,7 @@ func SanitizeText(content string) string {
 		"​":        "",
 		"‌":        "",
 		"‍":        "",
+		"⁠":        "",
 		"‑":        "-",
 		"\t":       "",
 	}
