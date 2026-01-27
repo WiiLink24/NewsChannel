@@ -91,7 +91,10 @@ func (n *News) MakeTopicTable() {
 	for i, topic := range topics {
 		n.Topics[i+1].TextOffset = n.GetCurrentSize()
 		n.TopicText = append(n.TopicText, utf16.Encode([]rune(topic))...)
-		n.TopicText = append(n.TopicText, uint16(0))
+		n.TopicText = append(n.TopicText, 0)
+		for n.GetCurrentSize()%4 != 0 {
+			n.TopicText = append(n.TopicText, uint16(0))
+		}
 	}
 }
 
