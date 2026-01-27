@@ -121,6 +121,8 @@ func SanitizeText(content string) string {
 		"&uuml;":   "ü",
 		"&Uuml;":   "Ü",
 		"​":        "",
+		"‌":        "",
+		"‍":        "",
 		"‑":        "-",
 		"\t":       "",
 	}
