@@ -127,7 +127,7 @@ func (a *ANSA) extractArticleBody(html string) string {
 			for _, paragraph := range paragraphSplit {
 				text := strings.TrimSpace(paragraph)
 				text = strings.ReplaceAll(text, "\n", " ")
-				if text != "" {
+				if text != "" && !strings.Contains(text, "Copyright ANSA") {
 					builder.WriteString(text + "\n\n")
 				}
 			}

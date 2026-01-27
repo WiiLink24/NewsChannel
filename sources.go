@@ -67,15 +67,16 @@ func (n *News) MakeSourceTable() {
 	n.Header.SourceTableOffset = n.GetCurrentSize()
 
 	logo := n.source.GetLogo()
+	copyright := n.source.GetCopyright()
 
 	n.Sources = append(n.Sources, Source{
 		Logo:            0,
-		Position:        1,
+		Position:        5,
 		PictureSize:     uint32(len(logo)),
 		PictureOffset:   0,
 		NameSize:        0,
 		NameOffset:      0,
-		CopyrightSize:   0,
+		CopyrightSize:   uint32(len(copyright) * 2),
 		CopyrightOffset: 0,
 	})
 
@@ -84,6 +85,16 @@ func (n *News) MakeSourceTable() {
 
 	for n.GetCurrentSize()%4 != 0 {
 		n.SourcePictures = append(n.SourcePictures, 0)
+	}
+
+	n.Sources[0].CopyrightOffset = n.GetCurrentSize()
+	n.SourceCopyright = append(n.SourceCopyright, copyright...)
+
+	// Null terminator
+	n.SourceCopyright = append(n.SourceCopyright, 0)
+
+	for n.GetCurrentSize()%4 != 0 {
+		n.SourceCopyright = append(n.SourceCopyright, uint16(0))
 	}
 
 	n.Header.NumberOfSources = 1

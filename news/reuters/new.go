@@ -3,6 +3,10 @@ package reuters
 import (
 	"NewsChannel/news"
 	_ "embed"
+	"fmt"
+	"strconv"
+	"time"
+	"unicode/utf16"
 )
 
 // Country represents a country in the Reuters API
@@ -103,4 +107,9 @@ func getCountry(code uint8) Country {
 
 func (r *Reuters) GetLogo() []byte {
 	return Logo
+}
+
+func (r *Reuters) GetCopyright() []uint16 {
+	copyrightString := fmt.Sprintf("© %s Reuters. All rights reserved", strconv.Itoa(time.Now().Year()))
+	return utf16.Encode([]rune(copyrightString))
 }

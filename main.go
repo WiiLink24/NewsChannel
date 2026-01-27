@@ -25,7 +25,7 @@ type News struct {
 	ArticleText     []uint16
 	Sources         []Source
 	SourcePictures  []byte
-	SourceCopyright []byte
+	SourceCopyright []uint16
 	Locations       []Location
 	LocationText    []uint16
 	Images          []Image
@@ -134,6 +134,7 @@ func (n *News) WriteAll(writer io.Writer) {
 	Write(writer, n.TopicText)
 	Write(writer, n.Sources)
 	Write(writer, n.SourcePictures)
+	Write(writer, n.SourceCopyright)
 	Write(writer, n.Locations)
 	Write(writer, n.LocationText)
 	Write(writer, n.Images)

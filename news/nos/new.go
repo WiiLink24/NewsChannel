@@ -2,6 +2,10 @@ package nos
 
 import (
 	_ "embed"
+	"fmt"
+	"strconv"
+	"time"
+	"unicode/utf16"
 )
 
 //go:embed logo.jpg
@@ -15,4 +19,9 @@ func NewNos(oldArticleTitles []string) *nos {
 
 func (a *nos) GetLogo() []byte {
 	return Logo
+}
+
+func (a *nos) GetCopyright() []uint16 {
+	copyrightString := fmt.Sprintf("© NOS %s", strconv.Itoa(time.Now().Year()))
+	return utf16.Encode([]rune(copyrightString))
 }

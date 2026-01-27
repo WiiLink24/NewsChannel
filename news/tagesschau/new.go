@@ -3,6 +3,7 @@ package tagesschau
 import (
 	"NewsChannel/news"
 	_ "embed"
+	"unicode/utf16"
 )
 
 type Tagesschau struct {
@@ -21,4 +22,9 @@ func NewTagesschau(oldArticleTitles []string) *Tagesschau {
 
 func (r *Tagesschau) GetLogo() []byte {
 	return Logo
+}
+
+func (r *Tagesschau) GetCopyright() []uint16 {
+	copyrightString := "© ARD-aktuell / tagesschau.de"
+	return utf16.Encode([]rune(copyrightString))
 }

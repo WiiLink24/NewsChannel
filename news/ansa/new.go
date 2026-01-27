@@ -2,6 +2,10 @@ package ansa
 
 import (
 	_ "embed"
+	"fmt"
+	"strconv"
+	"time"
+	"unicode/utf16"
 )
 
 type ANSA struct {
@@ -19,4 +23,9 @@ func NewAnsa(oldArticleTitles []string) *ANSA {
 
 func (a *ANSA) GetLogo() []byte {
 	return Logo
+}
+
+func (a *ANSA) GetCopyright() []uint16 {
+	copyrightString := fmt.Sprintf("Copyright %s © ANSA\nTutti i diritti riservati", strconv.Itoa(time.Now().Year()))
+	return utf16.Encode([]rune(copyrightString))
 }
