@@ -257,6 +257,6 @@ func (a *france24) extractThumbnail(html string) *news.Thumbnail {
 
 	return &news.Thumbnail{
 		Image:   news.ConvertImage(imageData),
-		Caption: caption,
+		Caption: news.SanitizeText(caption),
 	}
 }

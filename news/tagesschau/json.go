@@ -142,7 +142,7 @@ func getThumbnail(root map[string]any) (*news.Thumbnail, error) {
 
 	return &news.Thumbnail{
 		Image:   news.ConvertImage(data),
-		Caption: caption,
+		Caption: news.SanitizeText(caption),
 	}, nil
 }
 

@@ -78,7 +78,7 @@ func (f *nos) getArticles(url string, topic news.Topic) ([]news.Article, error) 
 				caption := f.extractImageCaption(item.Link)
 				thumbnail = &news.Thumbnail{
 					Image:   news.ConvertImage(imageData),
-					Caption: caption,
+					Caption: news.SanitizeText(caption),
 				}
 			}
 		}

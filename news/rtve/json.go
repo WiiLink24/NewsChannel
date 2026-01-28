@@ -149,7 +149,7 @@ func (r *RTVE) getThumbnail(imageURL string, articleURL string) (*news.Thumbnail
 
 	return &news.Thumbnail{
 		Image:   news.ConvertImage(data),
-		Caption: caption,
+		Caption: news.SanitizeText(caption),
 	}, nil
 }
 
