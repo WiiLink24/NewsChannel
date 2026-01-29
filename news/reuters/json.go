@@ -199,18 +199,21 @@ func getLocation(root []map[string]any) (*news.Location, error) {
 			continue
 		}
 
-		if child["data"].(map[string]any)["article"].(map[string]any)["additional_properties"].(map[string]any)["article_properties"].(map[string]any)["place"] == nil {
+		if child["data"].(map[string]any)["article"].(map[string]any)["dateline"] == nil {
 			return nil, nil
 		}
 
-		location := child["data"].(map[string]any)["article"].(map[string]any)["additional_properties"].(map[string]any)["article_properties"].(map[string]any)["place"].(string)
-
-		// Sometimes the place property is just the date, followed by "(Reuters)"
-		if strings.Contains(location, "(Reuters)") {
+		location := child["data"].(map[string]any)["article"].(map[string]any)["dateline"].([]any)[0].(string)
+		splitLocation := strings.Split(location, ",")
+		if len(splitLocation) == 1 {
+			// Didn't split anything - no location
 			return nil, nil
 		}
 
-		locations := strings.Split(location, "/")
+		// Extract the location name (first part before comma)
+		locationName := strings.TrimSpace(splitLocation[0])
+		locations := strings.Split(locationName, "/")
+
 		// Use the new dynamic location function that includes OSM API fallback
 		return news.GetLocationForExtractedLocation(locations, "en"), nil
 	}
