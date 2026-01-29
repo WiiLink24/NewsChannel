@@ -3,9 +3,9 @@ package main
 import (
 	"NewsChannel/news/ansa"
 	"NewsChannel/news/france24"
-	"NewsChannel/news/nhk"
 	"NewsChannel/news/nos"
 	"NewsChannel/news/reuters"
+	"NewsChannel/news/reuters-jp"
 	"NewsChannel/news/rtve"
 	"NewsChannel/news/tagesschau"
 	_ "embed"
@@ -41,12 +41,11 @@ func (n *News) setSource(sourceName string) {
 	case "nos":
 		nosSource := nos.NewNos(n.oldArticleTitles)
 		n.source = nosSource
-	case "nhk":
-		nhkSource := nhk.NewNHK(n.oldArticleTitles)
-		n.source = nhkSource
 	case "tagesschau":
 		tagesschauSource := tagesschau.NewTagesschau(n.oldArticleTitles)
 		n.source = tagesschauSource
+	case "reuters-jp":
+		n.source = reutersjp.NewReuters(n.oldArticleTitles)
 	default:
 		n.source = reuters.NewReuters(n.oldArticleTitles, n.currentCountryCode)
 	}
