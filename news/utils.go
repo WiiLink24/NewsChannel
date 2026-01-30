@@ -146,6 +146,7 @@ func SanitizeText(content string) string {
 		"⁠":        "",
 		"‑":        "-",
 		"\t":       "",
+		"ᵉ":        "e",
 	}
 
 	for entity, char := range replacements {

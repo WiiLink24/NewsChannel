@@ -4,13 +4,10 @@ import (
 	"NewsChannel/news"
 	"encoding/xml"
 	"log"
-	"regexp"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
-
-var htmlRegex = regexp.MustCompile("<.*?>")
 
 // RSS structures for parsing France24 XML feeds
 type RSS struct {
@@ -71,18 +68,23 @@ func (a *france24) getArticles(url string, topic news.Topic) ([]news.Article, er
 		}
 
 		// Get full article content by scraping the link
-		content, location, thumbnail := a.getFullArticle(item.Link)
+		content, location, thumbnail, err := a.getFullArticle(item.Link)
+		if err != nil {
+			return nil, err
+		}
+
+		contentString := *content
 
 		// Use description as fallback if content fetch fails
-		if content == "" {
-			content = item.Description
+		if contentString == "" {
+			contentString = item.Description
 		}
 
 		// Clean HTML tags from content
-		content = htmlRegex.ReplaceAllString(content, "")
+		contentString = news.SanitizeText(contentString)
 
 		// Skip if no content
-		if len(strings.TrimSpace(content)) == 0 {
+		if len(strings.TrimSpace(contentString)) == 0 {
 			continue
 		}
 
@@ -99,7 +101,7 @@ func (a *france24) getArticles(url string, topic news.Topic) ([]news.Article, er
 
 		article := news.Article{
 			Title:     title,
-			Content:   &content,
+			Content:   &contentString,
 			Topic:     topic,
 			Location:  location,
 			Thumbnail: thumbnail,
@@ -111,60 +113,49 @@ func (a *france24) getArticles(url string, topic news.Topic) ([]news.Article, er
 	return articles, nil
 }
 
-func (a *france24) getFullArticle(articleURL string) (content string, location *news.Location, thumbnail *news.Thumbnail) {
+func (a *france24) getFullArticle(articleURL string) (*string, *news.Location, *news.Thumbnail, error) {
 	if articleURL == "" {
-		return "", nil, nil
+		return nil, nil, nil, nil
 	}
 
 	data, err := news.HttpGet(articleURL)
 	if err != nil {
-		log.Printf("Failed to fetch article content from %s: %v", articleURL, err)
-		return "", nil, nil
+		return nil, nil, nil, err
 	}
 
 	html := string(data)
 
-	content = a.extractArticleBody(html)
-	location = a.extractLocationFromContent(html)
-	thumbnail = a.extractThumbnail(html)
+	content, err := a.extractArticleBody(html)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	location := a.extractLocationFromContent(html)
+	thumbnail := a.extractThumbnail(html)
 
-	return content, location, thumbnail
+	return content, location, thumbnail, nil
 }
 
-func (a *france24) extractArticleBody(html string) string {
+func (a *france24) extractArticleBody(html string) (*string, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
-		log.Println("Failed to parse HTML:", err)
-		return ""
+		return nil, err
 	}
 
-	var builder strings.Builder
+	var ret string
 
-	// Find all <p> tags with more than 50 characters and extract them (might not be the best approach)
-	doc.Find("p").Each(func(i int, s *goquery.Selection) {
-		text := strings.TrimSpace(s.Text())
-		if text != "" && len(text) > 50 {
-			builder.WriteString(text)
-			builder.WriteString("\n\n")
-		}
+	// Find article body section
+	doc.Find(`div.t-content__body`).Each(func(i int, section *goquery.Selection) {
+		section.Find(`p.a-read-more`).Remove()
+		section.Find("p").Each(func(j int, elem *goquery.Selection) {
+			text := strings.TrimSpace(elem.Text())
+			if text != "" {
+				ret += text
+				ret += "\n\n"
+			}
+		})
 	})
 
-	content := strings.TrimSpace(builder.String())
-
-	// Clean up HTML entities
-	content = strings.ReplaceAll(content, "&nbsp;", " ")
-	content = strings.ReplaceAll(content, "&amp;", "&")
-	content = strings.ReplaceAll(content, "&lt;", "<")
-	content = strings.ReplaceAll(content, "&gt;", ">")
-	content = strings.ReplaceAll(content, "&quot;", "\"")
-	content = strings.ReplaceAll(content, "&#39;", "'")
-	content = strings.ReplaceAll(content, "&rsquo;", "'")
-	content = strings.ReplaceAll(content, "&lsquo;", "'")
-
-	// Remove unwated phrase at the end of the content
-	content = strings.ReplaceAll(content, "Le contenu auquel vous tentez d'accéder n'existe pas ou n'est plus disponible.", "")
-
-	return content
+	return &ret, nil
 }
 
 func (a *france24) extractLocationFromContent(html string) *news.Location {
