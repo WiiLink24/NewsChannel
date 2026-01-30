@@ -80,15 +80,8 @@ func ConvertImage(data []byte) []byte {
 	resizedImage := image.NewRGBA(image.Rect(0, 0, resizeWidth, resizeHeight))
 	draw.BiLinear.Scale(resizedImage, resizedImage.Bounds(), origImage, origBounds, draw.Over, nil)
 
-	// Coordinates for corner to start crop from
-	x0 := (resizeWidth - 200) / 2
-	y0 := (resizeHeight - 200) / 2
-
-	newImage := image.NewRGBA(image.Rect(0, 0, 200, 200))
-	draw.Draw(newImage, newImage.Bounds(), resizedImage, image.Point{X: x0, Y: y0}, draw.Src)
-
 	var outputImgWriter bytes.Buffer
-	err = jpeg.Encode(bufio.NewWriter(&outputImgWriter), newImage, nil)
+	err = jpeg.Encode(bufio.NewWriter(&outputImgWriter), resizedImage, nil)
 	if err != nil {
 		return nil
 	}
