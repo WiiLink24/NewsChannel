@@ -1,0 +1,1 @@
+0 * * * * cd /app && ./app >> /dev/stdout 2>&1
