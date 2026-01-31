@@ -787,8 +787,10 @@ var CommonLocations = map[string]Location{
 }
 
 var AllowedTypes = []string{
+	"town",
 	"city",
 	"county",
+	"locality",
 	"province",
 	"state",
 	"country",
