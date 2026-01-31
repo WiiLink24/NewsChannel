@@ -117,7 +117,7 @@ func extractArticleBody(html string) (*string, *string, error) {
 	// Get the location
 	dateline := regexp.MustCompile(`([\[|［])(.*?)[０-９]`)
 	location := dateline.FindStringSubmatch(contentSlice[0])
-	if len(location[2]) > 0 {
+	if len(location) > 2 && len(location[2]) > 0 {
 		return &result, &location[2], nil
 	}
 
