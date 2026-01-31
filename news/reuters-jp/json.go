@@ -69,7 +69,10 @@ func (r *ReutersJP) createArticle(story map[string]any, topic news.Topic) (*news
 
 	var location *news.Location
 	if locationString != nil {
-		location = news.GetLocationForExtractedLocation(strings.Split(*locationString, "/"), "jp")
+		splitter := func(r rune) bool {
+			return r == '/' || r == '／'
+		}
+		location = news.GetLocationForExtractedLocation(strings.FieldsFunc(*locationString, splitter), "jp")
 	} else {
 		location = nil
 	}
