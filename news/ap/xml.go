@@ -46,11 +46,7 @@ func (a *AP) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	}
 
 	var articles []news.Article
-	for i, item := range rss.Channel.Items {
-		if i >= 1 {
-			break
-		}
-
+	for _, item := range rss.Channel.Items {
 		title := news.SanitizeText(item.Title)
 		// Check for duplicates
 		if news.IsDuplicateArticle(a.oldArticleTitles, title) {
@@ -76,6 +72,7 @@ func (a *AP) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 		}
 
 		articles = append(articles, article)
+		break
 	}
 
 	return articles, nil
