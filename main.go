@@ -122,7 +122,11 @@ func processNews(countryConfig CountryConfig) {
 	buffer := new(bytes.Buffer)
 	n.ReadNewsCache()
 	n.setSource(countryConfig.Source)
-	n.GetNewsArticles()
+	err := n.GetNewsArticles()
+	if err != nil {
+		ReportError(err)
+		return
+	}
 	n.MakeHeader()
 	n.MakeWiiMenuHeadlines()
 	n.MakeArticleTable()
