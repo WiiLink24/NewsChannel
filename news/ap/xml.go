@@ -33,7 +33,7 @@ type Item struct {
 
 func (a *AP) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	// Fetch RSS XML
-	data, err := news.HttpGet(url, "WiiLink News Channel File Generator")
+	data, err := news.HttpGet(url)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (a *AP) getFullArticle(articleURL string) (*string, *news.Location, *news.T
 		return nil, nil, nil, errors.New("empty articleURL")
 	}
 
-	data, err := news.HttpGet(articleURL, "WiiLink News Channel File Generator")
+	data, err := news.HttpGet(articleURL)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -166,7 +166,7 @@ func (a *AP) extractThumbnail(html string) *news.Thumbnail {
 		return nil
 	}
 
-	imageData, err := news.HttpGet(imageURL, "WiiLink News Channel File Generator")
+	imageData, err := news.HttpGet(imageURL)
 	if err != nil || len(imageData) == 0 {
 		return nil
 	}

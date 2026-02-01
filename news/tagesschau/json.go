@@ -7,7 +7,7 @@ import (
 )
 
 func (r *Tagesschau) getArticles(url string, topic news.Topic, storyKey string) ([]news.Article, error) {
-	data, err := news.HttpGet(url, "WiiLink News Channel File Generator")
+	data, err := news.HttpGet(url)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (r *Tagesschau) getArticles(url string, topic news.Topic, storyKey string) 
 		}
 
 		articleURL := story.(map[string]any)["details"].(string)
-		articleData, err := news.HttpGet(articleURL, "WiiLink News Channel File Generator")
+		articleData, err := news.HttpGet(articleURL)
 		if err != nil {
 			return nil, err
 		}
@@ -124,7 +124,7 @@ func getThumbnail(root map[string]any) (*news.Thumbnail, error) {
 	// Get highest res 1x1 ratio image URL
 	thumbnailURL := image["imageVariants"].(map[string]any)["1x1-840"].(string)
 
-	data, err := news.HttpGet(thumbnailURL, "WiiLink News Channel File Generator")
+	data, err := news.HttpGet(thumbnailURL)
 	if err != nil {
 		return nil, err
 	}
