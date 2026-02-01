@@ -54,15 +54,17 @@ func (n *News) setSource(sourceName string) {
 	}
 }
 
-func (n *News) GetNewsArticles() {
+func (n *News) GetNewsArticles() error {
 	var err error
 	n.articles, err = n.source.GetArticles()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Save articles to file for inspection (Debug)
 	// n.debugSaveArticles()
+
+	return nil
 }
 
 func (n *News) MakeSourceTable() {

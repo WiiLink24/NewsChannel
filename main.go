@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"hash/crc32"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/wii-tools/lzx/lz10"
 )
 
@@ -57,6 +59,8 @@ type News struct {
 type Config struct {
 	XMLName       xml.Name `xml:"Config"`
 	RSSHubAddress string   `xml:"RSSHubAddress"`
+	SentryDSN     string   `xml:"SentryDSN"`
+	IsDebug       bool     `xml:"IsDebug"`
 }
 
 var currentTime = 0
@@ -70,6 +74,14 @@ func main() {
 	err = xml.Unmarshal(rawConfig, config)
 	checkError(err)
 
+	// Before we do anything, init Sentry to capture all errors.
+	err = sentry.Init(sentry.ClientOptions{
+		Dsn:   config.SentryDSN,
+		Debug: config.IsDebug,
+	})
+	checkError(err)
+	defer sentry.Flush(2 * time.Second)
+
 	news.RSSHubAddress = config.RSSHubAddress
 
 	// Load countries from JSON file
@@ -78,54 +90,72 @@ func main() {
 
 	// Process each country/language combination
 	for _, countryConfig := range countries.Countries {
-		n := News{}
-		n.currentCountryCode = countryConfig.CountryCode
-		n.currentLanguageCode = countryConfig.LanguageCode
-
-		log.Printf("Processing %s (%s) - Country: %d, Language: %d",
-			countryConfig.Name, countryConfig.Language,
-			countryConfig.CountryCode, countryConfig.LanguageCode)
-
-		t := time.Now()
-		currentTime = int(t.Unix())
-		n.currentHour = t.Hour()
-
-		buffer := new(bytes.Buffer)
-		n.ReadNewsCache()
-		n.setSource(countryConfig.Source)
-		n.GetNewsArticles()
-		n.MakeHeader()
-		n.MakeWiiMenuHeadlines()
-		n.MakeArticleTable()
-		n.MakeTopicTable()
-		n.MakeSourceTable()
-		n.WriteNewsCache()
-		n.MakeLocationTable()
-		n.WriteImages()
-		n.Header.Filesize = n.GetCurrentSize()
-		n.WriteAll(buffer)
-
-		crcTable := crc32.MakeTable(crc32.IEEE)
-		checksum := crc32.Checksum(buffer.Bytes()[12:], crcTable)
-		n.Header.CRC32 = checksum
-
-		buffer.Reset()
-		n.WriteAll(buffer)
-
-		compressed, err := lz10.Compress(buffer.Bytes())
-		checkError(err)
-
-		// If the folder exists we can just continue
-		err = os.MkdirAll(fmt.Sprintf("./v2/%d/%03d", n.currentLanguageCode, n.currentCountryCode), os.ModePerm)
-		if !os.IsExist(err) {
-			checkError(err)
-		}
-
-		err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed), 0666)
-		checkError(err)
-
-		log.Printf("Successfully generated news file for %s (%s)", countryConfig.Name, countryConfig.Language)
+		func(countryConfig CountryConfig) {
+			defer func() {
+				if r := recover(); r != nil {
+					errorString := fmt.Sprintf("A panic occurred while processing %s (%s) - Country: %d, Language: %d:\n%s",
+						countryConfig.Name, countryConfig.Language,
+						countryConfig.CountryCode, countryConfig.LanguageCode, r)
+					ReportError(errors.New(errorString))
+				}
+			}()
+			processNews(countryConfig)
+		}(countryConfig)
 	}
+}
+
+func processNews(countryConfig CountryConfig) {
+	n := News{}
+	n.currentCountryCode = countryConfig.CountryCode
+	n.currentLanguageCode = countryConfig.LanguageCode
+
+	log.Printf("Processing %s (%s) - Country: %d, Language: %d",
+		countryConfig.Name, countryConfig.Language,
+		countryConfig.CountryCode, countryConfig.LanguageCode)
+
+	t := time.Now()
+	currentTime = int(t.Unix())
+	n.currentHour = t.Hour()
+
+	buffer := new(bytes.Buffer)
+	n.ReadNewsCache()
+	n.setSource(countryConfig.Source)
+	err := n.GetNewsArticles()
+	if err != nil {
+		ReportError(err)
+		return
+	}
+	n.MakeHeader()
+	n.MakeWiiMenuHeadlines()
+	n.MakeArticleTable()
+	n.MakeTopicTable()
+	n.MakeSourceTable()
+	n.WriteNewsCache()
+	n.MakeLocationTable()
+	n.WriteImages()
+	n.Header.Filesize = n.GetCurrentSize()
+	n.WriteAll(buffer)
+
+	crcTable := crc32.MakeTable(crc32.IEEE)
+	checksum := crc32.Checksum(buffer.Bytes()[12:], crcTable)
+	n.Header.CRC32 = checksum
+
+	buffer.Reset()
+	n.WriteAll(buffer)
+
+	compressed, err := lz10.Compress(buffer.Bytes())
+	checkError(err)
+
+	// If the folder exists we can just continue
+	err = os.MkdirAll(fmt.Sprintf("./v2/%d/%03d", n.currentLanguageCode, n.currentCountryCode), os.ModePerm)
+	if !os.IsExist(err) {
+		checkError(err)
+	}
+
+	err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed), 0666)
+	checkError(err)
+
+	log.Printf("Successfully generated news file for %s (%s)", countryConfig.Name, countryConfig.Language)
 }
 
 func checkError(err error) {

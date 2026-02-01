@@ -1,0 +1,5 @@
+<Config>
+    <RSSHubAddress></RSSHubAddress>
+    <SentryDSN></SentryDSN>
+    <IsDebug></IsDebug>
+</Config>
