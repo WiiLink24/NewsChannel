@@ -66,6 +66,7 @@ func (a *france24) getArticles(url string, topic news.Topic) ([]news.Article, er
 		if news.IsDuplicateArticle(a.oldArticleTitles, title) {
 			continue
 		}
+		a.oldArticleTitles = append(a.oldArticleTitles, title)
 
 		// Get full article content by scraping the link
 		content, location, thumbnail, err := a.getFullArticle(item.Link)

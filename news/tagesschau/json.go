@@ -28,6 +28,7 @@ func (r *Tagesschau) getArticles(url string, topic news.Topic, storyKey string) 
 		if news.IsDuplicateArticle(r.oldArticleTitles, title) {
 			continue
 		}
+		r.oldArticleTitles = append(r.oldArticleTitles, title)
 
 		// Ignore non-articles
 		if story.(map[string]any)["type"].(string) != "story" {

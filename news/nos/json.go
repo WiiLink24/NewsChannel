@@ -63,6 +63,7 @@ func (f *nos) getArticles(url string, topic news.Topic) ([]news.Article, error) 
 		if news.IsDuplicateArticle(f.oldArticleTitles, title) {
 			continue
 		}
+		f.oldArticleTitles = append(f.oldArticleTitles, title)
 
 		// Extract content from RSS
 		content := f.extractContentFromDescription(item.Description)

@@ -56,6 +56,7 @@ func (a *ANSA) getArticles(url string, topic news.Topic) ([]news.Article, error)
 		if news.IsDuplicateArticle(a.oldArticleTitles, title) {
 			continue
 		}
+		a.oldArticleTitles = append(a.oldArticleTitles, title)
 
 		// Get full article content by scraping the link
 		content, location, thumbnail := a.getFullArticle(item.Link)

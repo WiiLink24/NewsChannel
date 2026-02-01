@@ -72,6 +72,7 @@ func (r *Reuters) createArticle(story map[string]any, topic news.Topic) (*news.A
 	if news.IsDuplicateArticle(r.oldArticleTitles, title) {
 		return nil, nil
 	}
+	r.oldArticleTitles = append(r.oldArticleTitles, title)
 
 	// Ignore podcasts
 	if story["section_url"] == "/podcasts/" {

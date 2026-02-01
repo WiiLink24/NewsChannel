@@ -74,6 +74,7 @@ func (r *RTVE) getArticles(url string, topic news.Topic) ([]news.Article, error)
 		if news.IsDuplicateArticle(r.oldArticleTitles, title) {
 			continue
 		}
+		r.oldArticleTitles = append(r.oldArticleTitles, title)
 
 		// Use the text field as content, clean HTML tags
 		content := rtveArticle.Text
