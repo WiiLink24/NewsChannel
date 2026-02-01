@@ -76,10 +76,8 @@ func main() {
 
 	// Before we do anything, init Sentry to capture all errors.
 	err = sentry.Init(sentry.ClientOptions{
-		Dsn:              config.SentryDSN,
-		Debug:            config.IsDebug,
-		EnableTracing:    false,
-		TracesSampleRate: 1.0,
+		Dsn:   config.SentryDSN,
+		Debug: config.IsDebug,
 	})
 	checkError(err)
 	defer sentry.Flush(2 * time.Second)
