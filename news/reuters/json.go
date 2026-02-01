@@ -204,14 +204,15 @@ func getLocation(root []map[string]any) (*news.Location, error) {
 		}
 
 		location := child["data"].(map[string]any)["article"].(map[string]any)["dateline"].([]any)[0].(string)
-		splitLocation := strings.Split(location, ",")
-		if len(splitLocation) == 1 {
-			// Didn't split anything - no location
+		lastComma := strings.LastIndex(location, ",")
+		if lastComma == -1 {
+			// No commas - no location
 			return nil, nil
 		}
+		location = location[:lastComma]
 
 		// Extract the location name (first part before comma)
-		locationName := strings.TrimSpace(splitLocation[0])
+		locationName := strings.TrimSpace(location)
 		locations := strings.Split(locationName, "/")
 
 		// Use the new dynamic location function that includes OSM API fallback
