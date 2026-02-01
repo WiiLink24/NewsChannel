@@ -113,6 +113,9 @@ func getThumbnail(root map[string]any) (*news.Thumbnail, error) {
 	}
 
 	image := root["teaserImage"].(map[string]any)
+	if image["imageVariants"] == nil {
+		return nil, nil
+	}
 
 	// Ignore Tagesschau logo
 	if image["alttext"] != nil {
