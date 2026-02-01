@@ -9,7 +9,11 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"log"
 	"os"
+
+	"github.com/getsentry/sentry-go"
+	"github.com/logrusorgru/aurora/v4"
 )
 
 type CountryConfig struct {
@@ -72,4 +76,10 @@ func SignFile(contents []byte) []byte {
 	buffer.Write(contents)
 
 	return buffer.Bytes()
+}
+
+// ReportError reports errors to Sentry
+func ReportError(err error) {
+	sentry.CaptureException(err)
+	log.Printf("An error has occurred: %s", aurora.Red(err.Error()))
 }
