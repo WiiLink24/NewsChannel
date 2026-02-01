@@ -47,6 +47,7 @@ func (r *ReutersJP) createArticle(story map[string]any, topic news.Topic) (*news
 	if news.IsDuplicateArticle(r.oldArticleTitles, title) {
 		return nil, nil
 	}
+	r.oldArticleTitles = append(r.oldArticleTitles, title)
 
 	articlePath := story["canonical_url"]
 	articleURL := fmt.Sprintf("https://jp.reuters.com%s", articlePath)

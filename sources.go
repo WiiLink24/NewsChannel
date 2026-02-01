@@ -2,6 +2,7 @@ package main
 
 import (
 	"NewsChannel/news/ansa"
+	"NewsChannel/news/ap"
 	"NewsChannel/news/france24"
 	"NewsChannel/news/nos"
 	"NewsChannel/news/reuters"
@@ -46,6 +47,8 @@ func (n *News) setSource(sourceName string) {
 		n.source = tagesschauSource
 	case "reuters-jp":
 		n.source = reutersjp.NewReuters(n.oldArticleTitles)
+	case "ap":
+		n.source = ap.NewAP(n.oldArticleTitles)
 	default:
 		n.source = reuters.NewReuters(n.oldArticleTitles, n.currentCountryCode)
 	}

@@ -3,9 +3,7 @@ package news
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"net/url"
 	"slices"
 	"sort"
@@ -48,26 +46,9 @@ func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 
 	apiURL := fmt.Sprintf("https://nominatim.openstreetmap.org/search?q=%s&format=json&limit=1&accept-language=%s", encodedLocation, lang)
 
-	client := &http.Client{
-		Timeout: 10 * time.Second,
-	}
-
-	req, err := http.NewRequest("GET", apiURL, nil)
+	body, err := HttpGet(apiURL)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("User-Agent", "WiiLink News Channel File Generator")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to make API request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+		return nil, err
 	}
 
 	var results []NominatimResponse
@@ -787,8 +768,10 @@ var CommonLocations = map[string]Location{
 }
 
 var AllowedTypes = []string{
+	"town",
 	"city",
 	"county",
+	"locality",
 	"province",
 	"state",
 	"country",

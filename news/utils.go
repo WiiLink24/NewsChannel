@@ -27,6 +27,7 @@ func HttpGet(url string, userAgent ...string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("User-Agent", "WiiLink News Channel File Generator")
 
 	if len(userAgent) > 0 && userAgent[0] != "" {
 		req.Header.Set("User-Agent", userAgent[0])

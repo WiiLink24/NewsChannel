@@ -20,23 +20,23 @@ type CountryConfig struct {
 	Source       string `json:"source"`
 }
 
-type Config struct {
+type Countries struct {
 	Countries []CountryConfig `json:"countries"`
 }
 
-func LoadConfig(filename string) (*Config, error) {
+func LoadCountries(filename string) (*Countries, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	var config Config
-	err = json.Unmarshal(data, &config)
+	var countries Countries
+	err = json.Unmarshal(data, &countries)
 	if err != nil {
 		return nil, err
 	}
 
-	return &config, nil
+	return &countries, nil
 }
 
 // fixTime adjusts the timestamp to coincide with the Wii's UTC timestamp.

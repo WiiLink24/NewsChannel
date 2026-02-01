@@ -4,6 +4,7 @@ import (
 	"NewsChannel/news"
 	"bytes"
 	"encoding/binary"
+	"encoding/xml"
 	"fmt"
 	"hash/crc32"
 	"io"
@@ -53,15 +54,30 @@ type News struct {
 	topics []Topic
 }
 
+type Config struct {
+	XMLName       xml.Name `xml:"Config"`
+	RSSHubAddress string   `xml:"RSSHubAddress"`
+}
+
 var currentTime = 0
 
 func main() {
-	// Load configuration from JSON file instead of having random numbers (added Spain btw)
-	config, err := LoadConfig("countries.json")
+	// Load config
+	rawConfig, err := os.ReadFile("./config.xml")
+	checkError(err)
+
+	config := &Config{}
+	err = xml.Unmarshal(rawConfig, config)
+	checkError(err)
+
+	news.RSSHubAddress = config.RSSHubAddress
+
+	// Load countries from JSON file
+	countries, err := LoadCountries("countries.json")
 	checkError(err)
 
 	// Process each country/language combination
-	for _, countryConfig := range config.Countries {
+	for _, countryConfig := range countries.Countries {
 		n := News{}
 		n.currentCountryCode = countryConfig.CountryCode
 		n.currentLanguageCode = countryConfig.LanguageCode
