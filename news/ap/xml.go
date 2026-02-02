@@ -60,13 +60,13 @@ func (a *AP) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 			return nil, err
 		}
 
-		if *content == "" {
+		if content == "" {
 			continue
 		}
 
 		article := news.Article{
 			Title:     title,
-			Content:   content,
+			Content:   &content,
 			Topic:     topic,
 			Location:  location,
 			Thumbnail: thumbnail,
@@ -79,21 +79,24 @@ func (a *AP) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	return articles, nil
 }
 
-func (a *AP) getFullArticle(articleURL string) (*string, *news.Location, *news.Thumbnail, error) {
+func (a *AP) getFullArticle(articleURL string) (string, *news.Location, *news.Thumbnail, error) {
 	if articleURL == "" {
-		return nil, nil, nil, errors.New("empty articleURL")
+		return "", nil, nil, errors.New("empty articleURL")
 	}
 
 	data, err := news.HttpGet(articleURL)
 	if err != nil {
-		return nil, nil, nil, err
+		return "", nil, nil, err
 	}
 
 	html := string(data)
 
 	content, locationString, err := a.extractArticleBody(html)
 	if err != nil {
-		return nil, nil, nil, err
+		return "", nil, nil, err
+	}
+	if len(content) == 0 {
+		return "", nil, nil, nil
 	}
 
 	var location *news.Location
@@ -106,10 +109,10 @@ func (a *AP) getFullArticle(articleURL string) (*string, *news.Location, *news.T
 	return content, location, thumbnail, nil
 }
 
-func (a *AP) extractArticleBody(html string) (*string, *string, error) {
+func (a *AP) extractArticleBody(html string) (string, *string, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
-		return nil, nil, err
+		return "", nil, err
 	}
 
 	var contentSlice []string
@@ -130,6 +133,10 @@ func (a *AP) extractArticleBody(html string) (*string, *string, error) {
 		})
 	})
 
+	if len(contentSlice) == 0 {
+		return "", nil, nil
+	}
+
 	var content string
 	for _, paragraph := range contentSlice {
 		content += news.SanitizeText(paragraph)
@@ -140,10 +147,10 @@ func (a *AP) extractArticleBody(html string) (*string, *string, error) {
 	locationRegex := regexp.MustCompile(`(.*?) \(AP\) — `)
 	location := locationRegex.FindStringSubmatch(contentSlice[0])
 	if len(location) > 1 && len(location[1]) > 0 {
-		return &content, &location[1], nil
+		return content, &location[1], nil
 	}
 
-	return &content, nil, nil
+	return content, nil, nil
 }
 
 func (a *AP) extractThumbnail(html string) *news.Thumbnail {
