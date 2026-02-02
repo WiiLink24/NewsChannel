@@ -93,12 +93,17 @@ func parseArticle(root map[string]any) (*string, error) {
 	// Iterate through text content
 	var ret string
 	for _, content := range root["content"].([]any) {
-		if content.(map[string]any)["type"].(string) != "text" {
+		if !allowedTypes[content.(map[string]any)["type"].(string)] {
 			continue
 		}
 
-		// Sanitize paragraph
-		unSanitized := content.(map[string]any)["value"].(string)
+		var unSanitized string
+		if content.(map[string]any)["type"].(string) == "quotation" {
+			unSanitized = content.(map[string]any)["quotation"].(map[string]any)["text"].(string)
+		} else {
+			unSanitized = content.(map[string]any)["value"].(string)
+		}
+
 		sanitized := news.SanitizeText(unSanitized)
 
 		ret += sanitized
@@ -161,4 +166,10 @@ func getLocation(root map[string]any) (*news.Location, error) {
 	}
 
 	return nil, nil
+}
+
+var allowedTypes = map[string]bool{
+	"text":      true,
+	"headline":  true,
+	"quotation": true,
 }
