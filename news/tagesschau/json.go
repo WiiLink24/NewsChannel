@@ -130,8 +130,22 @@ func getThumbnail(root map[string]any) (*news.Thumbnail, error) {
 		}
 	}
 
+	acceptedThumbnails := []string{
+		"1x1-840", "1x1-640", "1x1-432", "1x1-256", "1x1-144",
+	}
+	var thumbnailURL string
+
 	// Get highest res 1x1 ratio image URL
-	thumbnailURL := image["imageVariants"].(map[string]any)["1x1-840"].(string)
+	for _, thumbnail := range acceptedThumbnails {
+		if image["imageVariants"].(map[string]any)[thumbnail] != nil {
+			thumbnailURL = image["imageVariants"].(map[string]any)[thumbnail].(string)
+			break
+		}
+	}
+
+	if thumbnailURL == "" {
+		return nil, nil
+	}
 
 	data, err := news.HttpGet(thumbnailURL)
 	if err != nil {
