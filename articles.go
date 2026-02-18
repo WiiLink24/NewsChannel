@@ -143,7 +143,11 @@ func (n *News) WriteImages() {
 
 	i = 0
 	for _, article := range n.articles {
-		if article.Thumbnail == nil || article.Thumbnail.Caption == "" {
+		if article.Thumbnail == nil {
+			continue
+		}
+		if len(article.Thumbnail.Caption) == 0 {
+			i++
 			continue
 		}
 
