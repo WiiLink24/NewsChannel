@@ -118,6 +118,8 @@ func extractArticleBody(html string) (*string, *string, error) {
 		result += "\n\n"
 	}
 
+	result = strings.TrimSpace(result)
+
 	// Get the location
 	dateline := regexp.MustCompile(`([\[|［])(.*?)[０-９]`)
 	location := dateline.FindStringSubmatch(contentSlice[0])

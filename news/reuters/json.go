@@ -153,6 +153,8 @@ func parseArticle(root []map[string]any) (*string, error) {
 		}
 	}
 
+	ret = strings.TrimSpace(ret)
+
 	return &ret, nil
 }
 

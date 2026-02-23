@@ -85,7 +85,7 @@ func (f *nos) getArticles(url string, topic news.Topic) ([]news.Article, error) 
 		}
 
 		// Skip if no content
-		if len(strings.TrimSpace(content)) == 0 {
+		if len(content) == 0 {
 			continue
 		}
 
@@ -115,7 +115,7 @@ func (f *nos) extractContentFromDescription(description string) string {
 		ret += "\n\n"
 	}
 
-	return ret
+	return strings.TrimSpace(ret)
 }
 
 func (f *nos) getLocationFromArticlePage(articleURL string) *news.Location {

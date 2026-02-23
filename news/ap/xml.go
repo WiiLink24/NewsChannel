@@ -106,7 +106,7 @@ func (a *AP) getFullArticle(articleURL string) (string, *news.Location, *news.Th
 
 	thumbnail := a.extractThumbnail(html)
 
-	return content, location, thumbnail, nil
+	return strings.TrimSpace(content), location, thumbnail, nil
 }
 
 func (a *AP) extractArticleBody(html string) (string, *string, error) {

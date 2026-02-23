@@ -4,6 +4,7 @@ import (
 	"NewsChannel/news"
 	"encoding/json"
 	"errors"
+	"strings"
 )
 
 func (r *Tagesschau) getArticles(url string, topic news.Topic, storyKey string) ([]news.Article, error) {
@@ -109,6 +110,8 @@ func parseArticle(root map[string]any) (*string, error) {
 		ret += sanitized
 		ret += "\n\n"
 	}
+
+	ret = strings.TrimSpace(ret)
 
 	return &ret, nil
 }
