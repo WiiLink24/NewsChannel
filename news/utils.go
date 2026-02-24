@@ -33,7 +33,13 @@ func HttpGet(url string, userAgent ...string) ([]byte, error) {
 		req.Header.Set("User-Agent", userAgent[0])
 	}
 
-	resp, err := client.Do(req)
+	var resp *http.Response
+	for i := 0; i < 5; i++ {
+		resp, err = client.Do(req)
+		if err == nil && resp.StatusCode == http.StatusOK {
+			break
+		}
+	}
 	if err != nil {
 		return nil, fmt.Errorf("HTTP request to %v failed: %v", url, err)
 	} else if resp.StatusCode != http.StatusOK {
