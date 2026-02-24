@@ -1,10 +1,12 @@
-FROM golang:1.24.11-alpine3.23 AS builder
+FROM golang:alpine AS builder
 
 # We assume only git is needed for all dependencies.
 # openssl is already built-in.
 RUN apk add -U --no-cache git
 
-WORKDIR /app
+RUN adduser -D server
+USER server
+WORKDIR /home/server
 
 # Cache pulled dependencies if not updated.
 COPY go.mod .
@@ -21,15 +23,17 @@ RUN go build -o app .
 # Runner
 FROM alpine:latest
 
-WORKDIR /app
+# Get supercronic
+RUN apk add -U --no-cache supercronic
+
+RUN adduser -D server
+USER server
+WORKDIR /home/server
 
 # Copy executable + country list
-COPY --from=builder /app/app .
+COPY --from=builder /home/server/app .
 COPY countries.json .
 
-# Setup cron
 COPY crontab .
-RUN chmod 0644 ./crontab
-RUN crontab ./crontab
 
-CMD ["crond", "-f"]
+CMD ["supercronic", "./crontab"]
