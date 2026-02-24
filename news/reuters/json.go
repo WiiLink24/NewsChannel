@@ -107,7 +107,7 @@ func (r *Reuters) createArticle(story map[string]any, topic news.Topic) (*news.A
 	}
 
 	// Possible there is no text?
-	if len(*content) == 0 {
+	if content == nil || len(*content) == 0 {
 		return nil, nil
 	}
 
@@ -137,6 +137,10 @@ func parseArticle(root []map[string]any) (*string, error) {
 	for _, child := range root {
 		if child["type"].(string) != "article_detail" {
 			continue
+		}
+
+		if child["data"].(map[string]any)["article"].(map[string]any)["content_elements"] == nil {
+			return nil, nil
 		}
 
 		for _, content := range child["data"].(map[string]any)["article"].(map[string]any)["content_elements"].([]any) {
