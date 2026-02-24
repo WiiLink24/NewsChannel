@@ -61,6 +61,8 @@ type Config struct {
 	RSSHubAddress string   `xml:"RSSHubAddress"`
 	SentryDSN     string   `xml:"SentryDSN"`
 	IsDebug       bool     `xml:"IsDebug"`
+	UseGmaps      bool     `xml:"UseGmaps"`
+	GmapsAPIKey   string   `xml:"GmapsAPIKey"`
 }
 
 var currentTime = 0
@@ -83,6 +85,8 @@ func main() {
 	defer sentry.Flush(2 * time.Second)
 
 	news.RSSHubAddress = config.RSSHubAddress
+	news.UseGmaps = config.UseGmaps
+	news.GmapsAPIKey = config.GmapsAPIKey
 
 	// Load countries from JSON file
 	countries, err := LoadCountries("countries.json")

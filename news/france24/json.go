@@ -130,7 +130,10 @@ func (a *france24) getFullArticle(articleURL string) (*string, *news.Location, *
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	location := a.extractLocationFromContent(html)
+	location, err := a.extractLocationFromContent(*content, html)
+	if err != nil {
+		log.Printf("Failed to get location for %s: %s", articleURL, err)
+	}
 	thumbnail := a.extractThumbnail(html)
 
 	return content, location, thumbnail, nil
@@ -159,11 +162,16 @@ func (a *france24) extractArticleBody(html string) (*string, error) {
 	return &ret, nil
 }
 
-func (a *france24) extractLocationFromContent(html string) *news.Location {
+func (a *france24) extractLocationFromContent(content string, html string) (*news.Location, error) {
+	// First check if Google Maps is enabled.
+	// It returns far better locations for non-English languages.
+	if news.UseGmaps && len(content) != 0 {
+		return news.GetGmapsLocation(content, "fr"), nil
+	}
+
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
-		log.Println("Failed to parse HTML:", err)
-		return nil
+		return nil, err
 	}
 
 	locationCandidates := make(map[string]bool)
@@ -196,7 +204,7 @@ func (a *france24) extractLocationFromContent(html string) *news.Location {
 		candidates = append(candidates, candidate)
 	}
 
-	return news.GetLocationForExtractedLocation(candidates, "fr")
+	return news.GetLocationForExtractedLocation(candidates, "fr"), nil
 }
 
 func (a *france24) extractThumbnail(html string) *news.Thumbnail {

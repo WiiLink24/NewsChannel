@@ -154,7 +154,13 @@ func (r *RTVE) getThumbnail(imageURL string, articleURL string) (*news.Thumbnail
 	}, nil
 }
 
-func (r *RTVE) extractLocation(text, category string, otherTopics []string) *news.Location {
+func (r *RTVE) extractLocation(content string, category string, otherTopics []string) *news.Location {
+	// First check if Google Maps is enabled.
+	// It returns far better locations for non-English languages.
+	if news.UseGmaps {
+		return news.GetGmapsLocation(content, "es")
+	}
+
 	// Extract location from a category path
 	extractFromPath := func(path string) *news.Location {
 		if path == "" {

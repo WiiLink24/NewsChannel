@@ -1,6 +1,7 @@
 package news
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"googlemaps.github.io/maps"
 )
 
 type Location struct {
@@ -39,6 +42,53 @@ type NominatimResponse struct {
 
 var locationCache = make(map[string]Location)
 var noSearchCache = make(map[string]bool)
+
+func GetGmapsLocation(query string, lang string) *Location {
+	client, err := maps.NewClient(maps.WithAPIKey(GmapsAPIKey))
+	if err != nil {
+		log.Printf("Failed to create Google Maps client: %s", err)
+		return nil
+	}
+
+	req := &maps.GeocodingRequest{
+		Address:  query,
+		Language: lang,
+	}
+
+	resp, err := client.Geocode(context.Background(), req)
+	if err != nil {
+		log.Printf("Failed to get location info from Google Maps: %s", err)
+		return nil
+	}
+	if len(resp) == 0 {
+		return nil
+	}
+
+	var locationName string
+	for _, component := range resp[0].AddressComponents {
+		for _, componentType := range component.Types {
+			if slices.Contains(AllowedTypesGmaps, componentType) {
+				locationName = component.LongName
+				break
+			}
+		}
+		if len(locationName) != 0 {
+			break
+		}
+	}
+
+	if len(locationName) == 0 {
+		return nil
+	}
+
+	location := &Location{
+		Longitude: resp[0].Geometry.Location.Lng,
+		Latitude:  resp[0].Geometry.Location.Lat,
+		Name:      locationName,
+	}
+
+	return location
+}
 
 // GetLocationFromAPI fetches location data from OpenStreetMap Nominatim API
 func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
@@ -81,7 +131,7 @@ func GetLocationFromAPI(locationName string, lang string) (*Location, error) {
 	location := &Location{
 		Longitude: lon,
 		Latitude:  lat,
-		Name:      result.Name,
+		Name:      locationName,
 		PlaceRank: result.PlaceRank,
 	}
 
@@ -774,5 +824,12 @@ var AllowedTypes = []string{
 	"locality",
 	"province",
 	"state",
+	"country",
+}
+
+var AllowedTypesGmaps = []string{
+	"locality",
+	"administrative_area_level_2",
+	"administrative_area_level_1",
 	"country",
 }

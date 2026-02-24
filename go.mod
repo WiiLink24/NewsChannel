@@ -15,7 +15,11 @@ require (
 
 require (
 	github.com/andybalholm/cascadia v1.3.3 // indirect
+	github.com/google/uuid v1.1.1 // indirect
+	go.opencensus.io v0.22.3 // indirect
 	golang.org/x/net v0.49.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
+	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
+	googlemaps.github.io/maps v1.7.0 // indirect
 )

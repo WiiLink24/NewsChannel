@@ -64,10 +64,7 @@ func (r *Tagesschau) getArticles(url string, topic news.Topic, storyKey string) 
 			continue
 		}
 
-		location, err := getLocation(articleJSON)
-		if err != nil {
-			return nil, err
-		}
+		location := getLocation(*content, articleJSON)
 
 		// Finally get the thumbnail.
 		thumbnail, err := getThumbnail(articleJSON)
@@ -172,17 +169,23 @@ func getThumbnail(root map[string]any) (*news.Thumbnail, error) {
 	}, nil
 }
 
-func getLocation(root map[string]any) (*news.Location, error) {
+func getLocation(content string, root map[string]any) *news.Location {
+	// First check if Google Maps is enabled.
+	// It returns far better locations for non-English languages.
+	if news.UseGmaps {
+		return news.GetGmapsLocation(content, "de")
+	}
+
 	var tags []string
 	for _, tag := range root["tags"].([]any) {
 		tags = append(tags, tag.(map[string]any)["tag"].(string))
 	}
 
 	if len(tags) != 0 {
-		return news.GetLocationForExtractedLocation(tags, "de"), nil
+		return news.GetLocationForExtractedLocation(tags, "de")
 	}
 
-	return nil, nil
+	return nil
 }
 
 var allowedTypes = map[string]bool{

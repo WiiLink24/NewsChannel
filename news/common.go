@@ -34,3 +34,5 @@ const (
 )
 
 var RSSHubAddress string
+var UseGmaps bool
+var GmapsAPIKey string

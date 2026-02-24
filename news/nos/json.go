@@ -68,8 +68,16 @@ func (f *nos) getArticles(url string, topic news.Topic) ([]news.Article, error) 
 		// Extract content from RSS
 		content := f.extractContentFromDescription(item.Description)
 
+		// Skip if no content
+		if len(content) == 0 {
+			continue
+		}
+
 		// Get location by scraping the article page for meta tags
-		location := f.getLocationFromArticlePage(item.Link)
+		location, err := f.getLocationFromArticlePage(content, item.Link)
+		if err != nil {
+			log.Printf("Failed to get location for %s: %s", item.Link, err)
+		}
 
 		// Get thumbnail from RSS
 		var thumbnail *news.Thumbnail
@@ -82,11 +90,6 @@ func (f *nos) getArticles(url string, topic news.Topic) ([]news.Article, error) 
 					Caption: news.SanitizeText(caption),
 				}
 			}
-		}
-
-		// Skip if no content
-		if len(content) == 0 {
-			continue
 		}
 
 		article := news.Article{
@@ -118,26 +121,30 @@ func (f *nos) extractContentFromDescription(description string) string {
 	return strings.TrimSpace(ret)
 }
 
-func (f *nos) getLocationFromArticlePage(articleURL string) *news.Location {
+func (f *nos) getLocationFromArticlePage(content string, articleURL string) (*news.Location, error) {
+	// First check if Google Maps is enabled.
+	// It returns far better locations for non-English languages.
+	if news.UseGmaps {
+		return news.GetGmapsLocation(content, "nl"), nil
+	}
+
 	if articleURL == "" {
-		return nil
+		return nil, nil
 	}
 
 	data, err := news.HttpGet(articleURL)
 	if err != nil {
-		log.Printf("Failed to fetch article page for location: %v", err)
-		return nil
+		return nil, err
 	}
 
 	html := string(data)
 	return f.extractLocationFromContent(html)
 }
 
-func (f *nos) extractLocationFromContent(html string) *news.Location {
+func (f *nos) extractLocationFromContent(html string) (*news.Location, error) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
-		log.Println("Failed to parse HTML:", err)
-		return nil
+		return nil, err
 	}
 
 	// Try to find location in meta keywords
@@ -155,7 +162,7 @@ func (f *nos) extractLocationFromContent(html string) *news.Location {
 		return true
 	})
 
-	return news.GetLocationForExtractedLocation(candidates, "nl")
+	return news.GetLocationForExtractedLocation(candidates, "nl"), nil
 }
 
 func (f *nos) extractImageCaption(articleURL string) string {

@@ -70,7 +70,7 @@ func (a *ANSA) getArticles(url string, topic news.Topic) ([]news.Article, error)
 		content = news.SanitizeText(content)
 
 		// Skip if no content
-		if len(strings.TrimSpace(content)) == 0 {
+		if len(content) == 0 {
 			continue
 		}
 
@@ -102,7 +102,10 @@ func (a *ANSA) getFullArticle(articleURL string) (content string, location *news
 	html := string(data)
 
 	content = a.extractArticleBody(html)
-	location = a.extractLocationFromTags(html)
+	location, err = a.extractLocation(content, html)
+	if err != nil {
+		log.Printf("Failed to get location for %s: %s", articleURL, err)
+	}
 	thumbnail = a.extractThumbnail(html)
 
 	return content, location, thumbnail
@@ -139,11 +142,16 @@ func (a *ANSA) extractArticleBody(html string) string {
 	return result
 }
 
-func (a *ANSA) extractLocationFromTags(html string) *news.Location {
+func (a *ANSA) extractLocation(content string, html string) (*news.Location, error) {
+	// First check if Google Maps is enabled.
+	// It returns far better locations for non-English languages.
+	if news.UseGmaps && len(content) != 0 {
+		return news.GetGmapsLocation(content, "it"), nil
+	}
+
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
-		log.Println("Failed to parse HTML:", err)
-		return nil
+		return nil, err
 	}
 
 	seen := make(map[string]bool)
@@ -176,7 +184,7 @@ func (a *ANSA) extractLocationFromTags(html string) *news.Location {
 		tags = append(tags, tag)
 	}
 
-	return news.GetLocationForExtractedLocation(tags, "it")
+	return news.GetLocationForExtractedLocation(tags, "it"), nil
 }
 
 func (a *ANSA) extractThumbnail(html string) *news.Thumbnail {
