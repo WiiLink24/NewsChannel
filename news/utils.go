@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/pmezard/go-difflib/difflib"
@@ -39,6 +40,7 @@ func HttpGet(url string, userAgent ...string) ([]byte, error) {
 		if err == nil && resp.StatusCode == http.StatusOK {
 			break
 		}
+		time.Sleep(1 * time.Second)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("HTTP request to %v failed: %v", url, err)
