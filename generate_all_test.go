@@ -81,7 +81,7 @@ func makeNews(_t *testing.T, hour int, dayDelta int) {
 			}
 		}
 
-		err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed), 0666)
+		err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed, true), 0666)
 		if err != nil {
 			_t.Fatal(err)
 		}
