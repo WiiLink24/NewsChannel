@@ -152,7 +152,7 @@ func processNews(countryConfig CountryConfig) {
 		checkError(err)
 	}
 
-	err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed), 0666)
+	err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed, false), 0666)
 	checkError(err)
 
 	log.Printf("Successfully generated news file for %s (%s)", countryConfig.Name, countryConfig.Language)

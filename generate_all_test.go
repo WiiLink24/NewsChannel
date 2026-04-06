@@ -1,23 +1,41 @@
 package main
 
 import (
-	"NewsChannel/news/reuters"
 	"bytes"
 	"fmt"
-	"github.com/wii-tools/lzx/lz10"
 	"hash/crc32"
 	"os"
+	"slices"
 	"testing"
 	"time"
+
+	"github.com/wii-tools/lzx/lz10"
 )
 
 func makeNews(_t *testing.T, hour int, dayDelta int) {
-	countries := []uint8{18, 49, 110}
-	for _, country := range countries {
+	// Load countries from JSON file
+	countries, err := LoadCountries("countries.json")
+	if err != nil {
+		_t.Fatal(err)
+	}
+
+	sourcesToTest := []string{
+		"tagesschau",
+		"rtve",
+		"ansa",
+		"france24",
+		"nos",
+		"reuters-jp",
+	}
+
+	// Process each country/language combination
+	for _, countryConfig := range countries.Countries {
+		if !slices.Contains(sourcesToTest, countryConfig.Source) && countryConfig.CountryCode != 110 {
+			continue
+		}
 		n := News{}
-		n.currentCountry = reuters.GetCountry(country)
-		n.currentCountryCode = country
-		n.currentLanguageCode = 1
+		n.currentCountryCode = countryConfig.CountryCode
+		n.currentLanguageCode = countryConfig.LanguageCode
 
 		now := time.Now()
 		t := time.Date(now.Year(), now.Month(), now.Day()-dayDelta, hour, 0, 0, 0, time.Local)
@@ -26,7 +44,12 @@ func makeNews(_t *testing.T, hour int, dayDelta int) {
 
 		buffer := new(bytes.Buffer)
 		n.ReadNewsCache()
-		n.GetNewsArticles()
+		n.setSource(countryConfig.Source)
+		err := n.GetNewsArticles()
+		if err != nil {
+			_t.Fatal(err)
+		}
+
 		n.MakeHeader()
 		n.MakeWiiMenuHeadlines()
 		n.MakeArticleTable()
@@ -58,7 +81,7 @@ func makeNews(_t *testing.T, hour int, dayDelta int) {
 			}
 		}
 
-		err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed), 0666)
+		err = os.WriteFile(fmt.Sprintf("./v2/%d/%03d/news.bin.%02d", n.currentLanguageCode, n.currentCountryCode, n.currentHour), SignFile(compressed, true), 0666)
 		if err != nil {
 			_t.Fatal(err)
 		}

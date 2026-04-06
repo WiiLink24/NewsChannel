@@ -116,6 +116,10 @@ func (n *News) WriteNewsCache() {
 	checkError(err)
 
 	// Now write file
+	err = os.MkdirAll("./cache", os.ModePerm)
+	if !os.IsExist(err) {
+		checkError(err)
+	}
 	err = os.WriteFile(fmt.Sprintf("./cache/cache_%d_%d_%d.news", n.currentHour, n.currentCountryCode, n.currentLanguageCode), data, 0666)
 	checkError(err)
 }
