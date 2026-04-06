@@ -45,12 +45,10 @@ func (n *News) MakeArticleTable() {
 				}
 			}
 
-			// If no existing location was found but the article contains a location, determine if we need to make an API call.
+			// If article contains a new location, add to locations.
 			if locationIndex == uint32(math.MaxUint32) && article.Location.Latitude != 0 {
 				locationIndex = uint32(len(n.locations))
 				n.locations = append(n.locations, article.Location)
-			} else if locationIndex == uint32(math.MaxUint32) && article.Location.Name != "" {
-				// TODO: API Call for location
 			}
 		}
 

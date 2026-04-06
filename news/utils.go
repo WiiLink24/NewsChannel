@@ -7,6 +7,7 @@ import (
 	"html"
 	"image/jpeg"
 	"io"
+	"log"
 	"math"
 	"net/http"
 	"regexp"
@@ -48,7 +49,12 @@ func HttpGet(url string, userAgent ...string) ([]byte, error) {
 		return nil, fmt.Errorf("HTTP request to %v failed: Status Code %v", url, resp.StatusCode)
 	}
 
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Println("error closing body:", err)
+		}
+	}(resp.Body)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -142,10 +148,10 @@ func SanitizeText(content string) string {
 		"&Ntilde;": "Ñ",
 		"&uuml;":   "ü",
 		"&Uuml;":   "Ü",
-		"​":        "",
-		"‌":        "",
-		"‍":        "",
-		"⁠":        "",
+		"\u200b":   "",
+		"\u200c":   "",
+		"\u200d":   "",
+		"\u2060":   "",
 		"‑":        "-",
 		"\t":       "",
 		"ᵉ":        "e",
