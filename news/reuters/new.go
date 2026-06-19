@@ -38,8 +38,17 @@ const (
 	Syria         = "syria"
 )
 
+// Define which API to use
+type Language uint8
+
+const (
+	English  = 1
+	Japanese = 0
+)
+
 type Reuters struct {
 	country          Country
+	language         Language
 	oldArticleTitles []string
 	news.Source
 }
@@ -47,10 +56,11 @@ type Reuters struct {
 //go:embed logo.jpg
 var Logo []byte
 
-func NewReuters(oldArticleTitles []string, countryCode uint8) *Reuters {
+func NewReuters(oldArticleTitles []string, countryCode uint8, language uint8) *Reuters {
 	return &Reuters{
 		oldArticleTitles: oldArticleTitles,
 		country:          getCountry(countryCode),
+		language:         Language(language),
 	}
 }
 
