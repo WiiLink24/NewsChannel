@@ -238,6 +238,7 @@ func (r *Reuters) getLocation(location string) (*news.Location, error) {
 		// Use the new dynamic location function that includes OSM API fallback
 		return news.GetLocationForExtractedLocation(locations, "en"), nil
 	} else {
+		// The Japan API dumps the whole dateline in the "place" field, for some reason
 		datelineRegex := regexp.MustCompile(`([\[|［])(.*?)[０-９]`)
 		locationString := datelineRegex.FindStringSubmatch(location)
 		if len(locationString) > 2 && len(locationString[2]) > 0 {

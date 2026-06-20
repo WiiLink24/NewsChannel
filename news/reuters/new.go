@@ -42,8 +42,8 @@ const (
 type Language uint8
 
 const (
-	English  = 1
-	Japanese = 0
+	Japanese Language = iota
+	English
 )
 
 type Reuters struct {
