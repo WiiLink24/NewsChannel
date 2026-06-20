@@ -5,226 +5,250 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
+	"slices"
 	"strings"
 )
 
-func (r *Reuters) getArticles(url string, topic news.Topic) ([]news.Article, error) {
+func (r *Reuters) getMobileArticles(url string, topic news.Topic) ([]news.Article, error) {
 	data, err := news.HttpGet(url, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
 	if err != nil {
 		return nil, err
 	}
 
-	var root []map[string]any
-	err = json.Unmarshal(data, &root)
+	var categoryData []ReutersCategory
+	err = json.Unmarshal(data, &categoryData)
 	if err != nil {
 		return nil, err
 	}
 
-	// Iterate over the article block
-	var articles []news.Article
-	for _, v := range root {
-		if v["type"].(string) != "story-cluster" {
-			continue
-		}
-
-		stories := v["data"].(map[string]any)["stories"].([]any)
-		for _, story := range stories {
-			article, err := r.createArticle(story.(map[string]any), topic)
-			if err != nil {
-				return nil, err
-			}
-			if article == nil {
-				continue
-			}
-
-			articles = append(articles, *article)
-			return articles, nil
-		}
+	var allowedTypes = []string{
+		"story-cluster",
+		"latest-stories",
 	}
 
-	// If we make it here, all clusters are duplicates. Move onto latest articles.
-	for _, v := range root {
-		if v["type"].(string) != "latest-stories" {
+	// Iterate over the article block
+	var articles []news.Article
+	for _, v := range categoryData {
+		if !slices.Contains(allowedTypes, v.Type) {
 			continue
 		}
 
-		stories := v["data"].(map[string]any)["stories"].([]any)
+		stories := v.Data.Stories
 		for _, story := range stories {
-			article, err := r.createArticle(story.(map[string]any), topic)
+			title := news.SanitizeText(story.Title)
+			// Compare previous articles to see if we have a duplicate.
+			if news.IsDuplicateArticle(r.oldArticleTitles, title) {
+				return nil, nil
+			}
+			r.oldArticleTitles = append(r.oldArticleTitles, title)
+
+			// Ignore podcasts
+			if story.SectionURL == "/podcasts/" {
+				return nil, nil
+			}
+
+			// The article is nested inside a "templates" list, with the data we require in the 1st index.
+			// I (Noah) refer to this as bad because it returns the web page, rather than the mobile API page.
+			// The mobile API is much easier to parse.
+			articlePath := story.URL
+			articleURL := fmt.Sprintf("https://www.reuters.com/mobile/v1%s", articlePath)
+			articleData, err := news.HttpGet(articleURL, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
 			if err != nil {
 				return nil, err
 			}
-			if article == nil {
-				continue
+
+			// Parse article JSON
+			var article []ReutersMobileArticle
+			err = json.Unmarshal(articleData, &article)
+			if err != nil {
+				var serr *json.SyntaxError
+				if errors.As(err, &serr) {
+					return nil, nil
+				}
+
+				return nil, err
 			}
 
-			articles = append(articles, *article)
-			return articles, nil
+			// Iterate until we find the "article_detail" key
+			for _, child := range article {
+				if child.Type != "article_detail" {
+					continue
+				}
+				article, err := r.createArticle(child.Data.ArticleData, topic)
+				if err != nil {
+					return nil, err
+				}
+				if article == nil {
+					continue
+				}
+
+				articles = append(articles, *article)
+				return articles, nil
+			}
 		}
 	}
 
 	return articles, nil
 }
 
-func (r *Reuters) createArticle(story map[string]any, topic news.Topic) (*news.Article, error) {
-	title := news.SanitizeText(story["title"].(string))
-	// Compare previous articles to see if we have a duplicate.
-	if news.IsDuplicateArticle(r.oldArticleTitles, title) {
-		return nil, nil
-	}
-	r.oldArticleTitles = append(r.oldArticleTitles, title)
-
-	// Ignore podcasts
-	if story["section_url"] == "/podcasts/" {
-		return nil, nil
-	}
-
-	// The article is nested inside a "templates" list, with the data we require in the 1st index.
-	// I (Noah) refer to this as bad because it returns the web page, rather than the mobile API page.
-	// The mobile API is much easier to parse.
-	articlePath := story["url"]
-	articleURL := fmt.Sprintf("https://www.reuters.com/mobile/v1%s", articlePath)
-	articleData, err := news.HttpGet(articleURL, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
+func (r *Reuters) getWebArticles(url string, topic news.Topic) ([]news.Article, error) {
+	data, err := news.HttpGet(url)
 	if err != nil {
 		return nil, err
 	}
 
-	// Parse article JSON
-	var articleJSON []map[string]any
-	err = json.Unmarshal(articleData, &articleJSON)
+	var categoryData ReutersWebCategory
+	err = json.Unmarshal(data, &categoryData)
 	if err != nil {
-		var serr *json.SyntaxError
-		if errors.As(err, &serr) {
+		return nil, err
+	}
+
+	// Iterate over the article block
+	var articles []news.Article
+	stories := categoryData.Result.Articles
+	for _, story := range stories {
+		title := news.SanitizeText(story.Title)
+		// Compare previous articles to see if we have a duplicate.
+		if news.IsDuplicateArticle(r.oldArticleTitles, title) {
 			return nil, nil
 		}
+		r.oldArticleTitles = append(r.oldArticleTitles, title)
 
-		return nil, err
+		articlePath := story.CanonicalURL
+		articleURL := fmt.Sprintf("https://jp.reuters.com/pf/api/v3/content/fetch/article-by-id-or-url-v1?query={\"website_url\":\"%s\",\"website\":\"reuters-japan\"}", articlePath)
+		articleData, err := news.HttpGet(articleURL)
+		if err != nil {
+			return nil, err
+		}
+
+		// Parse article JSON
+		var articleJSON ReutersWebArticle
+		err = json.Unmarshal(articleData, &articleJSON)
+		if err != nil {
+			var serr *json.SyntaxError
+			if errors.As(err, &serr) {
+				return nil, nil
+			}
+
+			return nil, err
+		}
+
+		article, err := r.createArticle(articleJSON.Result, topic)
+		if err != nil {
+			return nil, err
+		}
+		if article == nil {
+			continue
+		}
+
+		articles = append(articles, *article)
+		return articles, nil
 	}
 
-	content, err := parseArticle(articleJSON)
+	return articles, nil
+}
+
+func (r *Reuters) createArticle(story ReutersArticle, topic news.Topic) (*news.Article, error) {
+	content, err := parseArticle(story.ContentElements)
 	if err != nil {
 		return nil, err
 	}
 
 	// Possible there is no text?
-	if content == nil || len(*content) == 0 {
+	if len(content) == 0 {
 		return nil, nil
 	}
 
-	location, err := getLocation(articleJSON)
+	location, err := r.getLocation(story.AdditionalProperties.ArticleProperties.Place)
 	if err != nil {
 		return nil, err
 	}
 
 	// Finally get the thumbnail.
-	thumbnail, err := getThumbnail(articleJSON)
+	thumbnail, err := getThumbnail(story.Thumbnail)
 	if err != nil {
 		return nil, err
 	}
 
 	return &news.Article{
-		Title:     title,
-		Content:   content,
+		Title:     news.SanitizeText(story.Title),
+		Content:   &content,
 		Topic:     topic,
 		Location:  location,
 		Thumbnail: thumbnail,
 	}, nil
 }
 
-func parseArticle(root []map[string]any) (*string, error) {
-	// Iterate until we find the "article_detail" key
+func parseArticle(elements []ReutersContentElement) (string, error) {
 	var ret string
-	for _, child := range root {
-		if child["type"].(string) != "article_detail" {
+	for _, content := range elements {
+		if content.Type != "paragraph" {
 			continue
 		}
 
-		if child["data"].(map[string]any)["article"].(map[string]any)["content_elements"] == nil {
-			return nil, nil
-		}
+		// Sanitize paragraph
+		unSanitized := content.Content.(string)
+		sanitized := news.SanitizeText(unSanitized)
 
-		for _, content := range child["data"].(map[string]any)["article"].(map[string]any)["content_elements"].([]any) {
-			if content.(map[string]any)["type"].(string) != "paragraph" {
-				continue
-			}
-
-			// Sanitize paragraph
-			unSanitized := content.(map[string]any)["content"].(string)
-			sanitized := news.SanitizeText(unSanitized)
-
-			ret += sanitized
-			ret += "\n\n"
-		}
+		ret += sanitized
+		ret += "\n\n"
 	}
 
 	ret = strings.TrimSpace(ret)
 
-	return &ret, nil
+	return ret, nil
 }
 
-func getThumbnail(root []map[string]any) (*news.Thumbnail, error) {
-	for _, child := range root {
-		if child["type"].(string) != "article_detail" {
-			continue
-		}
-
-		// Don't add Reuters logo as image
-		if child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["id"] != nil {
-			if child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["id"].(string) == "466BJJQ7PVGY5O53NZ3KL65MHM" {
-				return nil, nil
-			}
-		}
-
-		thumbnailURL := child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["url"].(string)
-
-		data, err := news.HttpGet(thumbnailURL, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
-		if err != nil {
-			return nil, err
-		}
-
-		if len(data) == 0 {
-			return nil, nil
-		}
-
-		caption := ""
-		if child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["caption"] != nil {
-			caption = child["data"].(map[string]any)["article"].(map[string]any)["thumbnail"].(map[string]any)["caption"].(string)
-		}
-
-		return &news.Thumbnail{
-			Image:   news.ConvertImage(data),
-			Caption: news.SanitizeText(caption),
-		}, nil
+func getThumbnail(thumbnail ReutersThumbnail) (*news.Thumbnail, error) {
+	// Don't add Reuters logo as image
+	if thumbnail.ID == "466BJJQ7PVGY5O53NZ3KL65MHM" || len(thumbnail.URL) == 0 {
+		return nil, nil
 	}
 
-	return nil, nil
+	data, err := news.HttpGet(thumbnail.URL, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
+	if err != nil {
+		return nil, err
+	}
+
+	if len(data) == 0 {
+		return nil, nil
+	}
+
+	var caption string
+	if len(thumbnail.Caption) != 0 {
+		caption = thumbnail.Caption
+	} else if len(thumbnail.AltText) != 0 {
+		caption = thumbnail.AltText
+	}
+
+	return &news.Thumbnail{
+		Image:   news.ConvertImage(data),
+		Caption: news.SanitizeText(caption),
+	}, nil
 }
 
-func getLocation(root []map[string]any) (*news.Location, error) {
-	for _, child := range root {
-		if child["type"].(string) != "article_detail" {
-			continue
-		}
-
-		if child["data"].(map[string]any)["article"].(map[string]any)["dateline"] == nil {
+func (r *Reuters) getLocation(location string) (*news.Location, error) {
+	if r.language == English {
+		if strings.Contains(location, "Reuters") || len(location) == 0 {
 			return nil, nil
 		}
-
-		location := child["data"].(map[string]any)["article"].(map[string]any)["dateline"].([]any)[0].(string)
-		lastComma := strings.LastIndex(location, ",")
-		if lastComma == -1 {
-			// No commas - no location
-			return nil, nil
-		}
-		location = location[:lastComma]
-
-		// Extract the location name (first part before comma)
-		locationName := strings.TrimSpace(location)
-		locations := strings.Split(locationName, "/")
+		locations := strings.Split(location, "/")
 
 		// Use the new dynamic location function that includes OSM API fallback
 		return news.GetLocationForExtractedLocation(locations, "en"), nil
-	}
+	} else {
+		// The Japan API dumps the whole dateline in the "place" field, for some reason
+		datelineRegex := regexp.MustCompile(`([\[|［])(.*?)[０-９]`)
+		locationString := datelineRegex.FindStringSubmatch(location)
+		if len(locationString) > 2 && len(locationString[2]) > 0 {
+			splitter := func(r rune) bool {
+				return r == '/' || r == '／'
+			}
 
+			locationList := strings.FieldsFunc(locationString[2], splitter)
+			return news.GetLocationForExtractedLocation(locationList, "jp"), nil
+		}
+	}
 	return nil, nil
 }
