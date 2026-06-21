@@ -39,13 +39,13 @@ func (r *Reuters) getMobileArticles(url string, topic news.Topic) ([]news.Articl
 			title := news.SanitizeText(story.Title)
 			// Compare previous articles to see if we have a duplicate.
 			if news.IsDuplicateArticle(r.oldArticleTitles, title) {
-				return nil, nil
+				continue
 			}
 			r.oldArticleTitles = append(r.oldArticleTitles, title)
 
 			// Ignore podcasts
 			if story.SectionURL == "/podcasts/" {
-				return nil, nil
+				continue
 			}
 
 			// The article is nested inside a "templates" list, with the data we require in the 1st index.
@@ -64,7 +64,7 @@ func (r *Reuters) getMobileArticles(url string, topic news.Topic) ([]news.Articl
 			if err != nil {
 				var serr *json.SyntaxError
 				if errors.As(err, &serr) {
-					return nil, nil
+					continue
 				}
 
 				return nil, err
@@ -75,7 +75,7 @@ func (r *Reuters) getMobileArticles(url string, topic news.Topic) ([]news.Articl
 				if child.Type != "article_detail" {
 					continue
 				}
-				article, err := r.createArticle(child.Data.ArticleData, topic)
+				article, err := r.createArticle(title, child.Data.ArticleData, topic)
 				if err != nil {
 					return nil, err
 				}
@@ -111,7 +111,7 @@ func (r *Reuters) getWebArticles(url string, topic news.Topic) ([]news.Article, 
 		title := news.SanitizeText(story.Title)
 		// Compare previous articles to see if we have a duplicate.
 		if news.IsDuplicateArticle(r.oldArticleTitles, title) {
-			return nil, nil
+			continue
 		}
 		r.oldArticleTitles = append(r.oldArticleTitles, title)
 
@@ -128,13 +128,13 @@ func (r *Reuters) getWebArticles(url string, topic news.Topic) ([]news.Article, 
 		if err != nil {
 			var serr *json.SyntaxError
 			if errors.As(err, &serr) {
-				return nil, nil
+				continue
 			}
 
 			return nil, err
 		}
 
-		article, err := r.createArticle(articleJSON.Result, topic)
+		article, err := r.createArticle(title, articleJSON.Result, topic)
 		if err != nil {
 			return nil, err
 		}
@@ -149,7 +149,7 @@ func (r *Reuters) getWebArticles(url string, topic news.Topic) ([]news.Article, 
 	return articles, nil
 }
 
-func (r *Reuters) createArticle(story ReutersArticle, topic news.Topic) (*news.Article, error) {
+func (r *Reuters) createArticle(title string, story ReutersArticle, topic news.Topic) (*news.Article, error) {
 	content, err := parseArticle(story.ContentElements)
 	if err != nil {
 		return nil, err
@@ -172,7 +172,7 @@ func (r *Reuters) createArticle(story ReutersArticle, topic news.Topic) (*news.A
 	}
 
 	return &news.Article{
-		Title:     news.SanitizeText(story.Title),
+		Title:     title,
 		Content:   &content,
 		Topic:     topic,
 		Location:  location,

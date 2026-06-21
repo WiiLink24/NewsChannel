@@ -25,12 +25,16 @@ func makeNews(_t *testing.T, hour int, dayDelta int) {
 		"ansa",
 		"france24",
 		"nos",
-		"reuters-jp",
+	}
+
+	reutersCountries := []uint8{
+		1,
+		110,
 	}
 
 	// Process each country/language combination
 	for _, countryConfig := range countries.Countries {
-		if !slices.Contains(sourcesToTest, countryConfig.Source) && countryConfig.CountryCode != 110 {
+		if !slices.Contains(sourcesToTest, countryConfig.Source) && !slices.Contains(reutersCountries, countryConfig.CountryCode) {
 			continue
 		}
 		n := News{}
