@@ -4,72 +4,70 @@ import (
 	"NewsChannel/news"
 )
 
+type Category struct {
+	Name news.Topic
+	URL  string
+}
+
 func (a *france24) GetArticles() ([]news.Article, error) {
+	var categoryURLs = []Category{
+		{
+			news.NationalNews,
+			"france",
+		},
+		{
+			news.InternationalNews,
+			"monde",
+		},
+		{
+			news.Sports,
+			"sports",
+		},
+		{
+			news.Entertainment,
+			"culture",
+		},
+		{
+			news.Business,
+			"economie",
+		},
+		{
+			news.Science,
+			"éco-tech",
+		},
+		{
+			news.Technology,
+			"éco-tech",
+		},
+	}
 	var articles []news.Article
 
-	temp, err := a.GetNationalArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+	// Limited to 7 articles per file, more tend to push us over the file size limit.
+	for len(articles) < 7 && len(categoryURLs) > 0 {
+		var activeCategories []Category
 
-	temp, err = a.GetInternationalArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+		for _, cat := range categoryURLs {
+			if len(articles) == 7 {
+				break
+			}
 
-	temp, err = a.GetSportsArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			var temp []news.Article
+			var err error
 
-	temp, err = a.GetEntertainmentArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			temp, err = a.getArticles(cat.URL, cat.Name)
 
-	temp, err = a.GetBusinessArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			if err != nil {
+				return nil, err
+			}
 
-	temp, err = a.GetTechnologyArticles()
-	if err != nil {
-		return nil, err
+			if len(temp) > 0 {
+				articles = append(articles, temp...)
+				activeCategories = append(activeCategories, cat)
+			}
+		}
+
+		categoryURLs = activeCategories
 	}
-	articles = append(articles, temp...)
 
 	return articles, nil
-}
-
-func (a *france24) GetNationalArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.france24.com/fr/france/rss", news.NationalNews)
-}
-
-func (a *france24) GetInternationalArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.france24.com/fr/monde/rss", news.InternationalNews)
-}
-
-func (a *france24) GetSportsArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.france24.com/fr/sports/rss", news.Sports)
-}
-
-func (a *france24) GetEntertainmentArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.france24.com/fr/culture/rss", news.Entertainment)
-}
-
-func (a *france24) GetBusinessArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.france24.com/fr/economie/rss", news.Business)
-}
-
-func (a *france24) GetScienceArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.france24.com/fr/éco-tech/rss", news.Science)
-}
-
-func (a *france24) GetTechnologyArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.france24.com/fr/éco-tech/rss", news.Technology)
 }

@@ -3,6 +3,7 @@ package nos
 import (
 	"NewsChannel/news"
 	"encoding/xml"
+	"fmt"
 	"log"
 	"strings"
 
@@ -40,7 +41,7 @@ type nos struct {
 
 func (f *nos) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	// Fetch RSS XML
-	data, err := news.HttpGet(url)
+	data, err := news.HttpGet(fmt.Sprintf("https://feeds.nos.nl/%s", url))
 	if err != nil {
 		return nil, err
 	}

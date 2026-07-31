@@ -4,78 +4,70 @@ import (
 	"NewsChannel/news"
 )
 
+type Category struct {
+	Name news.Topic
+	URL  string
+}
+
 func (a *ANSA) GetArticles() ([]news.Article, error) {
+	var categoryURLs = []Category{
+		{
+			news.NationalNews,
+			"https://www.ansa.it/sito/ansait_rss.xml",
+		},
+		{
+			news.InternationalNews,
+			"https://www.ansa.it/sito/notizie/mondo/mondo_rss.xml",
+		},
+		{
+			news.Sports,
+			"https://www.ansa.it/sito/notizie/sport/sport_rss.xml",
+		},
+		{
+			news.Entertainment,
+			"https://www.ansa.it/sito/notizie/cultura/cultura_rss.xml",
+		},
+		{
+			news.Business,
+			"https://www.ansa.it/sito/notizie/economia/economia_rss.xml",
+		},
+		{
+			news.Science,
+			"https://www.ansa.it/canale_scienza_tecnica/notizie/scienzaetecnica_rss.xml",
+		},
+		{
+			news.Technology,
+			"https://www.ansa.it/canale_tecnologia/notizie/tecnologia_rss.xml",
+		},
+	}
 	var articles []news.Article
 
-	temp, err := a.GetNationalArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+	// Limited to 7 articles per file, more tend to push us over the file size limit.
+	for len(articles) < 7 && len(categoryURLs) > 0 {
+		var activeCategories []Category
 
-	temp, err = a.GetInternationalArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+		for _, cat := range categoryURLs {
+			if len(articles) == 7 {
+				break
+			}
 
-	temp, err = a.GetSportsArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			var temp []news.Article
+			var err error
 
-	temp, err = a.GetEntertainmentArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			temp, err = a.getArticles(cat.URL, cat.Name)
 
-	temp, err = a.GetBusinessArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			if err != nil {
+				return nil, err
+			}
 
-	temp, err = a.GetScienceArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			if len(temp) > 0 {
+				articles = append(articles, temp...)
+				activeCategories = append(activeCategories, cat)
+			}
+		}
 
-	temp, err = a.GetTechnologyArticles()
-	if err != nil {
-		return nil, err
+		categoryURLs = activeCategories
 	}
-	articles = append(articles, temp...)
 
 	return articles, nil
-}
-
-func (a *ANSA) GetNationalArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.ansa.it/sito/ansait_rss.xml", news.NationalNews)
-}
-
-func (a *ANSA) GetInternationalArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.ansa.it/sito/notizie/mondo/mondo_rss.xml", news.InternationalNews)
-}
-
-func (a *ANSA) GetSportsArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.ansa.it/sito/notizie/sport/sport_rss.xml", news.Sports)
-}
-
-func (a *ANSA) GetEntertainmentArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.ansa.it/sito/notizie/cultura/cultura_rss.xml", news.Entertainment)
-}
-
-func (a *ANSA) GetBusinessArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.ansa.it/sito/notizie/economia/economia_rss.xml", news.Business)
-}
-
-func (a *ANSA) GetScienceArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.ansa.it/canale_scienza_tecnica/notizie/scienzaetecnica_rss.xml", news.Science)
-}
-
-func (a *ANSA) GetTechnologyArticles() ([]news.Article, error) {
-	return a.getArticles("https://www.ansa.it/canale_tecnologia/notizie/tecnologia_rss.xml", news.Technology)
 }
