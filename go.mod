@@ -8,7 +8,7 @@ require (
 	github.com/logrusorgru/aurora/v4 v4.0.0
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/wii-tools/lzx v0.0.0-20231115152519-4c1183c96cc6
-	golang.org/x/image v0.38.0
+	golang.org/x/image v0.41.0
 )
 
 require (
