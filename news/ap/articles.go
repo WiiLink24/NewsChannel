@@ -2,81 +2,72 @@ package ap
 
 import (
 	"NewsChannel/news"
-	"fmt"
 )
 
+type Category struct {
+	Name news.Topic
+	URL  string
+}
+
 func (a *AP) GetArticles() ([]news.Article, error) {
+	var categoryURLs = []Category{
+		{
+			news.NationalNews,
+			"us-news",
+		},
+		{
+			news.InternationalNews,
+			"world-news",
+		},
+		{
+			news.Sports,
+			"sports",
+		},
+		{
+			news.Entertainment,
+			"entertainment",
+		},
+		{
+			news.Business,
+			"business",
+		},
+		{
+			news.Science,
+			"science",
+		},
+		{
+			news.Technology,
+			"technology",
+		},
+	}
 	var articles []news.Article
 
-	temp, err := a.GetNationalArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+	// Limited to 7 articles per file, more tend to push us over the file size limit.
+	for len(articles) < 7 && len(categoryURLs) > 0 {
+		var activeCategories []Category
 
-	temp, err = a.GetInternationalArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+		for _, cat := range categoryURLs {
+			if len(articles) == 7 {
+				break
+			}
 
-	temp, err = a.GetSportsArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			var temp []news.Article
+			var err error
 
-	temp, err = a.GetEntertainmentArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			temp, err = a.getArticles(cat.URL, cat.Name)
 
-	temp, err = a.GetBusinessArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			if err != nil {
+				return nil, err
+			}
 
-	temp, err = a.GetScienceArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			if len(temp) > 0 {
+				articles = append(articles, temp...)
+				activeCategories = append(activeCategories, cat)
+			}
+		}
 
-	temp, err = a.GetTechnologyArticles()
-	if err != nil {
-		return nil, err
+		categoryURLs = activeCategories
 	}
-	articles = append(articles, temp...)
 
 	return articles, nil
-}
-
-func (a *AP) GetNationalArticles() ([]news.Article, error) {
-	return a.getArticles(fmt.Sprintf("%s/apnews/topics/us-news", news.RSSHubAddress), news.NationalNews)
-}
-
-func (a *AP) GetInternationalArticles() ([]news.Article, error) {
-	return a.getArticles(fmt.Sprintf("%s/apnews/topics/world-news", news.RSSHubAddress), news.InternationalNews)
-}
-
-func (a *AP) GetSportsArticles() ([]news.Article, error) {
-	return a.getArticles(fmt.Sprintf("%s/apnews/topics/sports", news.RSSHubAddress), news.Sports)
-}
-
-func (a *AP) GetEntertainmentArticles() ([]news.Article, error) {
-	return a.getArticles(fmt.Sprintf("%s/apnews/topics/entertainment", news.RSSHubAddress), news.Entertainment)
-}
-
-func (a *AP) GetBusinessArticles() ([]news.Article, error) {
-	return a.getArticles(fmt.Sprintf("%s/apnews/topics/business", news.RSSHubAddress), news.Business)
-}
-
-func (a *AP) GetScienceArticles() ([]news.Article, error) {
-	return a.getArticles(fmt.Sprintf("%s/apnews/topics/science", news.RSSHubAddress), news.Science)
-}
-
-func (a *AP) GetTechnologyArticles() ([]news.Article, error) {
-	return a.getArticles(fmt.Sprintf("%s/apnews/topics/technology", news.RSSHubAddress), news.Technology)
 }

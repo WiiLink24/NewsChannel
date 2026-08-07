@@ -3,6 +3,7 @@ package france24
 import (
 	"NewsChannel/news"
 	"encoding/xml"
+	"fmt"
 	"log"
 	"strings"
 
@@ -43,7 +44,7 @@ type france24 struct {
 
 func (a *france24) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	// Fetch RSS XML
-	data, err := news.HttpGet(url)
+	data, err := news.HttpGet(fmt.Sprintf("https://www.france24.com/fr/%s/rss", url))
 	if err != nil {
 		return nil, err
 	}

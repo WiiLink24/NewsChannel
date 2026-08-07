@@ -11,7 +11,7 @@ import (
 )
 
 func (r *Reuters) getMobileArticles(url string, topic news.Topic) ([]news.Article, error) {
-	data, err := news.HttpGet(url, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
+	data, err := news.HttpGet(fmt.Sprintf("https://www.reuters.com/mobile/v1%s?outputType=json",url), "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (r *Reuters) getMobileArticles(url string, topic news.Topic) ([]news.Articl
 }
 
 func (r *Reuters) getWebArticles(url string, topic news.Topic) ([]news.Article, error) {
-	data, err := news.HttpGet(url)
+	data, err := news.HttpGet(fmt.Sprintf("https://jp.reuters.com/pf/api/v3/content/fetch/articles-by-section-alias-or-id-v1?query={\"fetch_type\":\"collection_or_section\",\"orderby\":\"last_updated_date:desc\",\"section_id\":\"%s\",\"website\":\"reuters-japan\"}", url))
 	if err != nil {
 		return nil, err
 	}

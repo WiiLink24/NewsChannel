@@ -2,89 +2,72 @@ package rtve
 
 import (
 	"NewsChannel/news"
-	"log"
 )
 
+type Category struct {
+	Name news.Topic
+	ID   string
+}
+
 func (r *RTVE) GetArticles() ([]news.Article, error) {
+	var categoryURLs = []Category{
+		{
+			news.NationalNews,
+			"1420",
+		},
+		{
+			news.InternationalNews,
+			"828",
+		},
+		{
+			news.Sports,
+			"816",
+		},
+		{
+			news.Entertainment,
+			"827",
+		},
+		{
+			news.Business,
+			"1011",
+		},
+		{
+			news.Science,
+			"1012",
+		},
+		{
+			news.Technology,
+			"1161",
+		},
+	}
 	var articles []news.Article
 
-	temp, err := r.GetNationalArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+	// Limited to 7 articles per file, more tend to push us over the file size limit.
+	for len(articles) < 7 && len(categoryURLs) > 0 {
+		var activeCategories []Category
 
-	temp, err = r.GetInternationalArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+		for _, cat := range categoryURLs {
+			if len(articles) == 7 {
+				break
+			}
 
-	temp, err = r.GetSportsArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			var temp []news.Article
+			var err error
 
-	temp, err = r.GetEntertainmentArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			temp, err = r.getArticles(cat.ID, cat.Name)
 
-	temp, err = r.GetBusinessArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			if err != nil {
+				return nil, err
+			}
 
-	temp, err = r.GetScienceArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			if len(temp) > 0 {
+				articles = append(articles, temp...)
+				activeCategories = append(activeCategories, cat)
+			}
+		}
 
-	temp, err = r.GetTechnologyArticles()
-	if err != nil {
-		return nil, err
+		categoryURLs = activeCategories
 	}
-	articles = append(articles, temp...)
 
 	return articles, nil
-}
-
-func (r *RTVE) GetNationalArticles() ([]news.Article, error) {
-	log.Printf("Fetching national articles from RTVE")
-	url := "https://api.rtve.es/api/tematicas/1420/noticias.json?order=publication_date,desc"
-	return r.getArticles(url, news.NationalNews)
-}
-
-func (r *RTVE) GetInternationalArticles() ([]news.Article, error) {
-	url := "http://api.rtve.es/api/tematicas/828/noticias.json?order=publication_date,desc"
-	return r.getArticles(url, news.InternationalNews)
-}
-
-func (r *RTVE) GetSportsArticles() ([]news.Article, error) {
-	url := "http://api.rtve.es/api/tematicas/816/noticias.json?order=publication_date,desc"
-	return r.getArticles(url, news.Sports)
-}
-
-func (r *RTVE) GetEntertainmentArticles() ([]news.Article, error) {
-	url := "http://api.rtve.es/api/tematicas/827/noticias.json?order=publication_date,desc"
-	return r.getArticles(url, news.Entertainment)
-}
-
-func (r *RTVE) GetBusinessArticles() ([]news.Article, error) {
-	url := "http://api.rtve.es/api/tematicas/1011/noticias.json?order=publication_date,desc"
-	return r.getArticles(url, news.Business)
-}
-
-func (r *RTVE) GetScienceArticles() ([]news.Article, error) {
-	url := "http://api.rtve.es/api/tematicas/1012/noticias.json?order=publication_date,desc"
-	return r.getArticles(url, news.Science)
-}
-
-func (r *RTVE) GetTechnologyArticles() ([]news.Article, error) {
-	url := "http://api.rtve.es/api/tematicas/1161/noticias.json?order=publication_date,desc"
-	return r.getArticles(url, news.Technology)
 }

@@ -4,72 +4,70 @@ import (
 	"NewsChannel/news"
 )
 
+type Category struct {
+	Name news.Topic
+	URL  string
+}
+
 func (a *nos) GetArticles() ([]news.Article, error) {
+	var categoryURLs = []Category{
+		{
+			news.NationalNews,
+			"nosnieuwsbinnenland",
+		},
+		{
+			news.InternationalNews,
+			"nosnieuwsbuitenland",
+		},
+		{
+			news.Sports,
+			"nossportalgemeen",
+		},
+		{
+			news.Entertainment,
+			"nosnieuwsopmerkelijk",
+		},
+		{
+			news.Business,
+			"nosnieuwseconomie",
+		},
+		{
+			news.Science,
+			"nosnieuwscultuurenmedia",
+		},
+		{
+			news.Technology,
+			"nosnieuwstech",
+		},
+	}
 	var articles []news.Article
 
-	temp, err := a.GetNationalArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+	// Limited to 7 articles per file, more tend to push us over the file size limit.
+	for len(articles) < 7 && len(categoryURLs) > 0 {
+		var activeCategories []Category
 
-	temp, err = a.GetInternationalArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+		for _, cat := range categoryURLs {
+			if len(articles) == 7 {
+				break
+			}
 
-	temp, err = a.GetSportsArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			var temp []news.Article
+			var err error
 
-	temp, err = a.GetEntertainmentArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			temp, err = a.getArticles(cat.URL, cat.Name)
 
-	temp, err = a.GetBusinessArticles()
-	if err != nil {
-		return nil, err
-	}
-	articles = append(articles, temp...)
+			if err != nil {
+				return nil, err
+			}
 
-	temp, err = a.GetTechnologyArticles()
-	if err != nil {
-		return nil, err
+			if len(temp) > 0 {
+				articles = append(articles, temp...)
+				activeCategories = append(activeCategories, cat)
+			}
+		}
+
+		categoryURLs = activeCategories
 	}
-	articles = append(articles, temp...)
 
 	return articles, nil
-}
-
-func (a *nos) GetNationalArticles() ([]news.Article, error) {
-	return a.getArticles("https://feeds.nos.nl/nosnieuwsbinnenland", news.NationalNews)
-}
-
-func (a *nos) GetInternationalArticles() ([]news.Article, error) {
-	return a.getArticles("https://feeds.nos.nl/nosnieuwsbuitenland", news.InternationalNews)
-}
-
-func (a *nos) GetSportsArticles() ([]news.Article, error) {
-	return a.getArticles("https://feeds.nos.nl/nossportalgemeen", news.Sports)
-}
-
-func (a *nos) GetEntertainmentArticles() ([]news.Article, error) {
-	return a.getArticles("https://feeds.nos.nl/nosnieuwsopmerkelijk", news.Entertainment)
-}
-
-func (a *nos) GetBusinessArticles() ([]news.Article, error) {
-	return a.getArticles("https://feeds.nos.nl/nosnieuwseconomie", news.Business)
-}
-
-func (a *nos) GetScienceArticles() ([]news.Article, error) {
-	return a.getArticles("https://feeds.nos.nl/nosnieuwscultuurenmedia", news.Science)
-}
-
-func (a *nos) GetTechnologyArticles() ([]news.Article, error) {
-	return a.getArticles("https://feeds.nos.nl/nosnieuwstech", news.Technology)
 }

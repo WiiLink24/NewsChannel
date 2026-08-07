@@ -3,6 +3,7 @@ package rtve
 import (
 	"NewsChannel/news"
 	"encoding/json"
+	"fmt"
 	"strings"
 )
 
@@ -45,7 +46,7 @@ type RTVEArticle struct {
 }
 
 func (r *RTVE) getArticles(url string, topic news.Topic) ([]news.Article, error) {
-	data, err := news.HttpGet(url)
+	data, err := news.HttpGet(fmt.Sprintf("https://api.rtve.es/api/tematicas/%s/noticias.json?order=publication_date,desc", url))
 	if err != nil {
 		return nil, err
 	}

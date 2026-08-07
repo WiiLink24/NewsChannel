@@ -4,6 +4,7 @@ import (
 	"NewsChannel/news"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -33,7 +34,7 @@ type Item struct {
 
 func (a *AP) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	// Fetch RSS XML
-	data, err := news.HttpGet(url)
+	data, err := news.HttpGet(fmt.Sprintf("%s/apnews/topics/%s", news.RSSHubAddress, url))
 	if err != nil {
 		return nil, err
 	}
