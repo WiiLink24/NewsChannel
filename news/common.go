@@ -32,5 +32,3 @@ const (
 	Science
 	Technology
 )
-
-var RSSHubAddress string
