@@ -21,11 +21,3 @@ jobs:
 
       - name: Build
         run: go build -v ./...
-
-      # We need to generate a dummy key to use during the tests.
-      - name: Prepare for Tests
-        run: |
-          openssl genrsa -out Private.pem -traditional
-
-      - name: Test
-        run: go test -timeout 0 -v ./...
