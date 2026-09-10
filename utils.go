@@ -48,17 +48,13 @@ func fixTime(value int) uint32 {
 	return uint32((value - 946684800) / 60)
 }
 
-func SignFile(contents []byte, test bool) []byte {
+func SignFile(contents []byte) []byte {
 	buffer := new(bytes.Buffer)
 
 	// Get RSA key and sign
 	var rsaData []byte
 	var err error
-	if test {
-		rsaData, err = os.ReadFile("sample.pem")
-	} else {
-		rsaData, err = os.ReadFile("Private.pem")
-	}
+	rsaData, err = os.ReadFile("Private.pem")
 	checkError(err)
 
 	rsaBlock, _ := pem.Decode(rsaData)

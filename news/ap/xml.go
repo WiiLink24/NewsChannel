@@ -34,9 +34,13 @@ type Item struct {
 
 func (a *AP) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	// Fetch RSS XML
-	data, err := news.HttpGet(fmt.Sprintf("%s/apnews/topics/%s", news.RSSHubAddress, url))
+	data, err := news.HttpGet(fmt.Sprintf("%s/apnews/mobile/%s", news.RSSHubAddress, url))
 	if err != nil {
-		return nil, err
+		// Try desktop route
+		data, err = news.HttpGet(fmt.Sprintf("%s/apnews/topics/%s", news.RSSHubAddress, url))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Parse RSS XML
@@ -85,7 +89,7 @@ func (a *AP) getFullArticle(articleURL string) (string, *news.Location, *news.Th
 		return "", nil, nil, errors.New("empty articleURL")
 	}
 
-	data, err := news.HttpGet(articleURL)
+	data, err := news.HttpGet(articleURL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36")
 	if err != nil {
 		return "", nil, nil, err
 	}

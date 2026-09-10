@@ -1,5 +1,5 @@
 <Config>
-    <RSSHubAddress></RSSHubAddress>
+    <RSSHubAddress>http://127.0.0.1:1200</RSSHubAddress>
     <SentryDSN></SentryDSN>
     <IsDebug></IsDebug>
 </Config>
