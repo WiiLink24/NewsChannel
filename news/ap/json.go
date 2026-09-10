@@ -158,9 +158,13 @@ func (a *AP) extractArticleBody(html string) (string, *string, error) {
 
 	var contentSlice []string
 
-	// Select the main article body div
 	doc.Find("p").EachWithBreak(func(i int, elem *goquery.Selection) bool {
 		text := strings.TrimSpace(elem.Text())
+		if text == "___" {
+			// We have reached the article footer
+			return false
+		}
+
 		if text != "" {
 			contentSlice = append(contentSlice, text)
 		}
