@@ -25,7 +25,7 @@ jobs:
       # We need to generate a dummy key to use during the tests.
       - name: Prepare for Tests
         run: |
-          openssl genpkey -algorithm RSA -out Private.pem -pkeyopt rsa_keygen_bits:2048
+          openssl genrsa -out Private.pem -traditional
 
       - name: Test
         run: go test -timeout 0 -v ./...
