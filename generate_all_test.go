@@ -1,7 +1,9 @@
 package main
 
 import (
+	"NewsChannel/news"
 	"bytes"
+	"encoding/xml"
 	"fmt"
 	"hash/crc32"
 	"os"
@@ -25,6 +27,7 @@ func makeNews(_t *testing.T, hour int, dayDelta int) {
 		"ansa",
 		"france24",
 		"nos",
+		"ap",
 	}
 
 	reutersCountries := []uint8{
@@ -93,6 +96,20 @@ func makeNews(_t *testing.T, hour int, dayDelta int) {
 }
 
 func TestAllFileGeneration(_t *testing.T) {
+	// Load config
+	rawConfig, err := os.ReadFile("./config.xml")
+	if err != nil {
+		_t.Fatal(err)
+	}
+
+	config := &Config{}
+	err = xml.Unmarshal(rawConfig, config)
+	if err != nil {
+		_t.Fatal(err)
+	}
+
+	news.RSSHubAddress = config.RSSHubAddress
+
 	t := time.Now()
 
 	for i := 0; i < t.Hour(); i++ {
