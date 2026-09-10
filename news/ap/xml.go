@@ -89,7 +89,7 @@ func (a *AP) getFullArticle(articleURL string) (string, *news.Location, *news.Th
 		return "", nil, nil, errors.New("empty articleURL")
 	}
 
-	data, err := news.HttpGet(articleURL)
+	data, err := news.HttpGet(articleURL, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36")
 	if err != nil {
 		return "", nil, nil, err
 	}
