@@ -10,6 +10,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v6
 
@@ -20,6 +21,11 @@ jobs:
 
       - name: Build
         run: go build -v ./...
+
+      # We need to generate a dummy key to use during the tests.
+      - name: Prepare for Tests
+        run: |
+          openssl genpkey -algorithm RSA -out Private.pem -pkeyopt rsa_keygen_bits:2048
 
       - name: Test
         run: go test -timeout 0 -v ./...
