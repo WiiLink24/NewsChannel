@@ -57,10 +57,9 @@ type News struct {
 }
 
 type Config struct {
-	XMLName       xml.Name `xml:"Config"`
-	RSSHubAddress string   `xml:"RSSHubAddress"`
-	SentryDSN     string   `xml:"SentryDSN"`
-	IsDebug       bool     `xml:"IsDebug"`
+	XMLName   xml.Name `xml:"Config"`
+	SentryDSN string   `xml:"SentryDSN"`
+	IsDebug   bool     `xml:"IsDebug"`
 }
 
 var currentTime = 0
@@ -81,8 +80,6 @@ func main() {
 	})
 	checkError(err)
 	defer sentry.Flush(2 * time.Second)
-
-	news.RSSHubAddress = config.RSSHubAddress
 
 	// Load countries from JSON file
 	countries, err := LoadCountries("countries.json")
