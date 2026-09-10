@@ -25,24 +25,39 @@ type ArticleSummary struct {
 type StoryPageQuery struct {
 	Data struct {
 		StoryPage struct {
-			TypeName  string         `json:"__typename"`
-			StoryLead []Thumbnail    `json:"storyLead"`
-			StoryBody []StoryElement `json:"storyBody"`
+			TypeName       string                  `json:"__typename"`
+			StoryLead      []StoryLeadElement      `json:"storyLead"`
+			BlendedGallery []BlendedGalleryElement `json:"blendedGallery"`
+			StoryBody      []StoryElement          `json:"storyBody"`
 		} `json:"StoryPage"`
 	} `json:"data"`
 }
 
-type Thumbnail struct {
+type StoryLeadElement struct {
+	TypeName string   `json:"__typename"`
+	AltText  string   `json:"alt"`
+	Image    ImageMap `json:"image"`
+}
+
+type BlendedGalleryElement struct {
 	TypeName string `json:"__typename"`
-	AltText  string `json:"alt"`
-	Image    struct {
+	Slides   []struct {
+		TypeName string   `json:"__typename"`
+		Caption  []string `json:"caption"`
+		Media    []struct {
+			TypeName string   `json:"__typename"`
+			Image    ImageMap `json:"image"`
+		} `json:"media"`
+	} `json:"slides"`
+}
+
+type ImageMap struct {
+	TypeName string `json:"__typename"`
+	Entries  []struct {
 		TypeName string `json:"__typename"`
-		Entries  []struct {
-			TypeName string `json:"__typename"`
-			Key      string `json:"key"`
-			Value    string `json:"value"`
-		} `json:"entries"`
-	} `json:"image"`
+		Key      string `json:"key"`
+		Value    string `json:"value"`
+	} `json:"entries"`
 }
 
 type StoryElement struct {

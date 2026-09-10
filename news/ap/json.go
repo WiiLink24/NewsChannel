@@ -163,7 +163,7 @@ func (a *AP) getFullArticle(path string) (string, *news.Location, *news.Thumbnai
 		location = news.GetLocationForExtractedLocation([]string{*locationString}, "en")
 	}
 
-	thumbnail := a.extractThumbnail(articleResponse)
+	thumbnail := a.downloadThumbnail(articleResponse)
 
 	return strings.TrimSpace(content), location, thumbnail, nil
 }
@@ -205,36 +205,85 @@ func (a *AP) extractArticleBody(html string) (string, *string, error) {
 	return content, nil, nil
 }
 
-func (a *AP) extractThumbnail(articleResponse StoryPageQuery) *news.Thumbnail {
+func (a *AP) downloadThumbnail(articleResponse StoryPageQuery) *news.Thumbnail {
 	var imageURL string
 	var caption string
 
-	for _, item := range articleResponse.Data.StoryPage.StoryLead {
-		if item.TypeName != "Figure" || item.Image.TypeName != "Map" {
-			continue
-		}
-
-		caption = item.AltText
-		for _, mapEntry := range item.Image.Entries {
-			if mapEntry.TypeName != "MapEntry" || mapEntry.Key != "src" {
-				continue
-			}
-			imageURL = mapEntry.Value
-			break
-		}
-		break
+	if len(articleResponse.Data.StoryPage.BlendedGallery) > 0 {
+		caption, imageURL = a.extractGalleryImage(articleResponse.Data.StoryPage.BlendedGallery)
+	} else {
+		caption, imageURL = a.extractLeadImage(articleResponse.Data.StoryPage.StoryLead)
 	}
 
 	var imageData []byte
-	if imageURL != "" {
-		imageData, err := news.HttpGet(imageURL)
-		if err != nil || len(imageData) == 0 {
-			return nil
-		}
+	if imageURL == "" {
+		return nil
+	}
+
+	imageData, err := news.HttpGet(imageURL)
+	if err != nil || len(imageData) == 0 {
+		return nil
 	}
 
 	return &news.Thumbnail{
 		Image:   news.ConvertImage(imageData),
 		Caption: news.SanitizeText(caption),
 	}
+}
+
+func (a *AP) extractGalleryImage(gallery []BlendedGalleryElement) (caption string, imageURL string) {
+	for _, item := range gallery {
+		if item.TypeName != "Carousel" {
+			continue
+		}
+
+		for _, slide := range item.Slides {
+			if slide.TypeName != "GallerySlide" {
+				continue
+			}
+
+			for _, captionString := range slide.Caption {
+				if len(captionString) > 0 {
+					caption = captionString
+					break
+				}
+			}
+
+			for _, media := range slide.Media {
+				if media.TypeName != "Image" {
+					continue
+				}
+				imageURL = a.extractURLFromMap(media.Image)
+				return
+			}
+		}
+	}
+	return
+}
+
+func (a *AP) extractLeadImage(storyLead []StoryLeadElement) (caption string, imageURL string) {
+	for _, item := range storyLead {
+		if item.TypeName != "Figure" {
+			continue
+		}
+
+		caption = item.AltText
+		imageURL = a.extractURLFromMap(item.Image)
+		return
+	}
+
+	return
+}
+
+func (a *AP) extractURLFromMap(imageMap ImageMap) string {
+	if imageMap.TypeName != "Map" {
+		return ""
+	}
+	for _, mapEntry := range imageMap.Entries {
+		if mapEntry.TypeName != "MapEntry" || mapEntry.Key != "src" {
+			continue
+		}
+		return mapEntry.Value
+	}
+	return ""
 }
