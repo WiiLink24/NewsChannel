@@ -3,7 +3,6 @@ package ap
 import (
 	"NewsChannel/news"
 	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"net/url"
@@ -12,26 +11,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 )
-
-// RSS structures for parsing AP XML feeds
-type RSS struct {
-	XMLName xml.Name `xml:"rss"`
-	Channel Channel  `xml:"channel"`
-}
-
-type Channel struct {
-	Title       string `xml:"title"`
-	Link        string `xml:"link"`
-	Description string `xml:"description"`
-	Items       []Item `xml:"item"`
-}
-
-type Item struct {
-	Title       string `xml:"title"`
-	Description string `xml:"description"`
-	Link        string `xml:"link"`
-	GUID        string `xml:"guid"`
-}
 
 var BaseUrl = "https://apnews.com/graphql/delivery/ap/v1"
 
@@ -48,6 +27,9 @@ func (a *AP) getArticles(path string, topic news.Topic) ([]news.Article, error) 
 	requestURL := parsedURL.String()
 
 	data, err := news.HttpGet(requestURL)
+	if err != nil {
+		return nil, err
+	}
 
 	var categoryListing ContentPageQuery
 	err = json.Unmarshal(data, &categoryListing)
