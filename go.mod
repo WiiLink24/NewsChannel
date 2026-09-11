@@ -8,12 +8,12 @@ require (
 	github.com/logrusorgru/aurora/v4 v4.0.0
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/wii-tools/lzx v0.0.0-20231115152519-4c1183c96cc6
-	golang.org/x/image v0.41.0
+	golang.org/x/image v0.45.0
 )
 
 require (
 	github.com/andybalholm/cascadia v1.3.3 // indirect
-	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sys v0.45.0 // indirect
-	golang.org/x/text v0.37.0 // indirect
+	golang.org/x/text v0.39.0 // indirect
 )
