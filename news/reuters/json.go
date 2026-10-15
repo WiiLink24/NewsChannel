@@ -10,8 +10,15 @@ import (
 	"strings"
 )
 
+var Headers = map[string]string{
+	"content-type":         "application/json",
+	"user-agent":           "ReutersNews/7.48.0.1790290736 Mozilla/5.0 (Linux; Android 14; SM-A135F Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/153.0.8010.36 Mobile Safari/537.36",
+	"accept":               "application/json",
+	"x-datadog-tracked-by": "react-native",
+}
+
 func (r *Reuters) getMobileArticles(url string, topic news.Topic) ([]news.Article, error) {
-	data, err := news.HttpGet(fmt.Sprintf("https://www.reuters.com/mobile/v1%s?outputType=json",url), "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
+	data, err := news.HttpGet(fmt.Sprintf("https://www.reuters.com/mobile/v1%s?outputType=json", url), Headers)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +60,7 @@ func (r *Reuters) getMobileArticles(url string, topic news.Topic) ([]news.Articl
 			// The mobile API is much easier to parse.
 			articlePath := story.URL
 			articleURL := fmt.Sprintf("https://www.reuters.com/mobile/v1%s", articlePath)
-			articleData, err := news.HttpGet(articleURL, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
+			articleData, err := news.HttpGet(articleURL, Headers)
 			if err != nil {
 				return nil, err
 			}
@@ -93,7 +100,7 @@ func (r *Reuters) getMobileArticles(url string, topic news.Topic) ([]news.Articl
 }
 
 func (r *Reuters) getWebArticles(url string, topic news.Topic) ([]news.Article, error) {
-	data, err := news.HttpGet(fmt.Sprintf("https://jp.reuters.com/pf/api/v3/content/fetch/articles-by-section-alias-or-id-v1?query={\"fetch_type\":\"collection_or_section\",\"orderby\":\"last_updated_date:desc\",\"section_id\":\"%s\",\"website\":\"reuters-japan\"}", url))
+	data, err := news.HttpGet(fmt.Sprintf("https://www.reuters.com/pf/api/v3/content/fetch/articles-by-section-alias-or-id-v1?query={\"fetch_type\":\"collection_or_section\",\"orderby\":\"last_updated_date:desc\",\"section_id\":\"%s\",\"website\":\"reuters-japan\"}", url))
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +123,7 @@ func (r *Reuters) getWebArticles(url string, topic news.Topic) ([]news.Article, 
 		r.oldArticleTitles = append(r.oldArticleTitles, title)
 
 		articlePath := story.CanonicalURL
-		articleURL := fmt.Sprintf("https://jp.reuters.com/pf/api/v3/content/fetch/article-by-id-or-url-v1?query={\"website_url\":\"%s\",\"website\":\"reuters-japan\"}", articlePath)
+		articleURL := fmt.Sprintf("https://www.reuters.com/pf/api/v3/content/fetch/article-by-id-or-url-v1?query={\"website_url\":\"%s\",\"website\":\"reuters-japan\"}", articlePath)
 		articleData, err := news.HttpGet(articleURL)
 		if err != nil {
 			return nil, err
@@ -206,7 +213,7 @@ func getThumbnail(thumbnail ReutersThumbnail) (*news.Thumbnail, error) {
 		return nil, nil
 	}
 
-	data, err := news.HttpGet(thumbnail.URL, "ReutersNews/7.6.0 iPad8,6 iPadOS/18.1 CFNetwork/1.0 Darwin/24.1.0")
+	data, err := news.HttpGet(thumbnail.URL, Headers)
 	if err != nil {
 		return nil, err
 	}
