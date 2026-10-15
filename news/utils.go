@@ -23,7 +23,7 @@ import (
 	_ "image/png"
 )
 
-func HttpGet(url string, userAgent ...string) ([]byte, error) {
+func HttpGet(url string, headers ...map[string]string) ([]byte, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -31,8 +31,10 @@ func HttpGet(url string, userAgent ...string) ([]byte, error) {
 	}
 	req.Header.Set("User-Agent", "WiiLink News Channel File Generator")
 
-	if len(userAgent) > 0 && userAgent[0] != "" {
-		req.Header.Set("User-Agent", userAgent[0])
+	if len(headers) > 0 {
+		for k, v := range headers[0] {
+			req.Header.Set(k, v)
+		}
 	}
 
 	var resp *http.Response

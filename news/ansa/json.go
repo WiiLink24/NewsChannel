@@ -31,9 +31,13 @@ type Item struct {
 	GUID        string `xml:"guid"`
 }
 
+var Headers = map[string]string{
+	"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+}
+
 func (a *ANSA) getArticles(url string, topic news.Topic) ([]news.Article, error) {
 	// Fetch RSS XML
-	data, err := news.HttpGet(url, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	data, err := news.HttpGet(url, Headers)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +97,7 @@ func (a *ANSA) getFullArticle(articleURL string) (content string, location *news
 		return "", nil, nil
 	}
 
-	data, err := news.HttpGet(articleURL, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	data, err := news.HttpGet(articleURL, Headers)
 	if err != nil {
 		log.Printf("Failed to fetch article content from %s: %v", articleURL, err)
 		return "", nil, nil
@@ -200,7 +204,7 @@ func (a *ANSA) extractThumbnail(html string) *news.Thumbnail {
 		return nil
 	}
 
-	imageData, err := news.HttpGet(imageURL, "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+	imageData, err := news.HttpGet(imageURL, Headers)
 	if err != nil || len(imageData) == 0 {
 		return nil
 	}
