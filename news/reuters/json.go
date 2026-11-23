@@ -12,7 +12,8 @@ import (
 
 var Headers = map[string]string{
 	"content-type":         "application/json",
-	"user-agent":           "ReutersNews/7.48.0.1790290736 Mozilla/5.0 (Linux; Android 14; SM-A135F Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/153.0.8010.36 Mobile Safari/537.36",
+	"user-agent":           "ReutersNews/8.0.0 iPad8,6 iPadOS/27.2 CFNetwork/1.0 Darwin/27.2.0",
+	"cookie":               "placeholder",
 	"accept":               "application/json",
 	"x-datadog-tracked-by": "react-native",
 }
